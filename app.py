@@ -20,14 +20,12 @@ from apscheduler.schedulers.background import BackgroundScheduler
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'  # Required for flashing messages (e.g., in contact form)
 
-# MySQL Config
-app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = ''  # Default XAMPP MySQL password is empty
-app.config['MYSQL_DB'] = 'emaw'
+# MySQL Config for FreeDB
+app.config['MYSQL_HOST'] = 'sql.freedb.tech'
+app.config['MYSQL_USER'] = 'freedb_fic_user'
+app.config['MYSQL_PASSWORD'] = '8jBemu8X%TRDZB$'
+app.config['MYSQL_DB'] = 'freedb_emaw_db'
 
-# Initialize MySQL
-mysql = MySQL(app)
 
 
 admin = Blueprint('admin', __name__)
