@@ -1,0 +1,180 @@
+/* static/css/style.css */
+:root {
+    --emaw-primary: #002366;
+    --emaw-accent: #FFD700;
+  }
+  
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #ffffff;
+    color: #333;
+  }
+  
+  .navbar {
+    background-color: var(--emaw-primary) !important;
+  }
+  
+  .navbar-brand,
+  .nav-link,
+  .dropdown-item {
+    color: white !important;
+  }
+  
+  .navbar-brand:hover,
+  .nav-link:hover,
+  .dropdown-item:hover {
+    color: var(--emaw-accent) !important;
+  }
+
+  .navbar .btn-outline-light:hover {
+    background-color: yellow !important;
+    color: black !important;
+    border-color: yellow !important;
+  }
+
+
+  
+  .btn-primary {
+    background-color: var(--emaw-primary);
+    border-color: var(--emaw-primary);
+  }
+  
+  .btn-primary:hover {
+    background-color: var(--emaw-accent);
+    border-color: var(--emaw-accent);
+    color: black;
+  }
+  
+  footer {
+    background-color: var(--emaw-primary);
+    color: white;
+    padding: 20px 0;
+  }
+  
+  footer a {
+    color: var(--emaw-accent);
+    text-decoration: none;
+  }
+  
+  footer a:hover {
+    text-decoration: underline;
+  }
+  .footer-donation-section {
+    background-color: rgb(163, 201, 103); /* You can use #FFA500 too */
+    color: white;
+  }
+
+  .footer-main-section {
+    background-color: #ece4eb; /* A dark grey for contrast */
+    color: white;
+  }
+
+  .footer-main-section a {
+    color: #4b0cc0; /* Optional: yellow links for better contrast */
+    text-decoration: none;
+  }
+
+  .footer-bottom {
+    background-color: #000; /* Or your chosen color */
+    color: white;
+    width: 100vw;          /* Full screen width */
+    margin: 0;             /* Remove default margins */
+    padding: 1rem 0;
+    position: relative;
+    left: 0;
+    right: 0;
+    box-sizing: border-box;
+  }
+
+  .footer-bottom a {
+    color: var(--emaw-accent);
+    text-decoration: none;
+  }
+
+  .footer-bottom a:hover {
+    text-decoration: underline;
+  }
+
+  .summary-section {
+    width: 100%;
+    margin: 0;
+    padding: 60px 20px;
+    color: #000;
+  }
+
+  .summary-section + .summary-section {
+    margin-top: 0;
+  }
+
+  .summary-section h2 {
+    color: var(--emaw-primary);
+  }
+
+  .summary-section p {
+    color: #333;
+  }
+
+  .summary-section .btn {
+    margin-top: 10px;
+  }
+
+  /* Section-specific themes */
+  .core-values-section {
+    background: #e6f2ff; /* Light sky blue */
+  }
+
+  .objectives-section {
+    background: #f2faff; /* Very light blue/white blend */
+  }
+
+  .ministries-section {
+    background: #d9ecf2; /* Cool soft blue */
+  }
+
+  .departments-section {
+    background: #cce7ff; /* Light blue-gray */
+  }
+
+  .pastors-section {
+    background: #e0f7ff; /* Aqua-tinted light blue */
+  }
+
+  .churches-section {
+    background: #f2f9ff; /* Soft white-blue */
+  }
+
+  .gallery-section {
+    background: #eef8ff; /* Clean and bright */
+  }
+
+  .announcements-section {
+    background: #d0ecff; /* Muted blue for focus */
+  }
+
+  .events-section {
+    background: #e5f3ff; /* Gentle blue highlight */
+  }
+
+  .background-section {
+    background: #e5f3ff; /* Gentle blue highlight */
+  }
+
+  .order-of-services-section {
+    background-color: #eaf6ff; 
+    text-align: center;
+  }
+
+  .order-image {
+    display: block;
+    margin: 20px auto; /* Centers the image horizontally */
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+
+
+
+
+  

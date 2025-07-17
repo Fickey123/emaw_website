@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Events & Announcements - EMAW{% endblock %}
+{% block content %}
+<div class="container my-5">
+  <h2 class="mb-4 text-primary fw-bold">Upcoming Events</h2>
+  
+    <!-- Header Row -->
+    <div class="row fw-bold text-uppercase bg-secondary text-white py-2 px-3 rounded">
+      <div class="col-md-2 text-center">Date</div>
+      <div class="col-md-4">Event</div>
+      <div class="col-md-3">Time</div>
+      <div class="col-md-3">Venue</div>
+    </div>
+
+    <!-- Events List -->
+    {% for event in events %}
+      <div class="row align-items-center mb-2 {{ loop.cycle('bg-light', 'bg-white') }} border rounded shadow-sm p-3">
+        <div class="col-md-2 text-center fw-bold text-primary">
+          {% if event.end_date %}
+            {{ event.date.strftime('%b %d, %Y') }} - {{ event.end_date.strftime('%b %d, %Y') }}
+          {% else %}
+            {{ event.date.strftime('%b %d, %Y') }}
+          {% endif %}
+        </div>
+        <div class="col-md-4">
+          <span class="fw-semibold">{{ event.title }}</span>
+        </div>
+        <div class="col-md-3 text-muted">
+          {{ event.time }}
+        </div>
+        <div class="col-md-3 text-muted">
+          {{ event.venue }}
+        </div>
+      </div>
+    {% else %}
+      <p class="text-muted mt-3">No upcoming events at the moment.</p>
+    {% endfor %}
+
+  <h2 class="mt-5 mb-4 text-success fw-bold">Announcements</h2>
+
+  {% for ann in announcements %}
+  <div class="row mb-3 {{ loop.cycle('bg-light', 'bg-white') }} border rounded shadow-sm p-3">
+    <div class="col">
+      <p class="mb-0">{{ ann.message }}</p>
+    </div>
+  </div>
+  {% else %}
+  <p class="text-muted">No active announcements.</p>
+  {% endfor %}
+</div>
+{% endblock %}

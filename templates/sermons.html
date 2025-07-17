@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}Sermons & Gallery - EMAW{% endblock %}
+
+{% block content %}
+
+<style>
+    .card-img-top {
+        height: 200px;
+        object-fit: cover;
+    }
+    .card {
+        height: 100%;
+    }
+</style>
+
+<h2>Sermons & Gallery</h2>
+
+<!-- Sermons Section -->
+<section id="sermon">
+    <div class="container my-5">
+        <h3 class="text-center mb-4">Our Sermons</h3>
+        <div class="row">
+            {% for video in sermons %}
+            <div class="col-md-3 mb-4">
+                <div class="card h-100">
+                    <a href="https://www.youtube.com/watch?v={{ video.video_id }}" target="_blank">
+                        <img src="{{ video.thumbnail }}" class="card-img-top" alt="{{ video.title }}">
+                    </a>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ video.title }}</h5>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Gallery Section -->
+<section id="Gallery">
+    <div class="container my-5">
+        <h3 class="mb-4">Our Gallery</h3>
+
+        <!-- Pastors Gallery -->
+        <h3>Pastors Section</h3>
+        <div class="row">
+            {% for image in pastors %}
+            <div class="col-md-3 mb-4">
+                <div class="card">
+                    <img src="{{ url_for('static', filename='uploads/' + image.filename) }}" class="card-img-top" alt="{{ image.description }}">
+                    <div class="card-body">
+                        <p class="card-text">{{ image.description }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Congregation Gallery -->
+        <h3>Congregation Section</h3>
+        <div class="row">
+            {% for image in congregation %}
+            <div class="col-md-3 mb-4">
+                <div class="card">
+                    <img src="{{ url_for('static', filename='uploads/' + image.filename) }}" class="card-img-top" alt="{{ image.description }}">
+                    <div class="card-body">
+                        <p class="card-text">{{ image.description }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Events Gallery -->
+        <h3>Events Section</h3>
+        <div class="row">
+            {% for image in events %}
+            <div class="col-md-3 mb-4">
+                <div class="card">
+                    <img src="{{ url_for('static', filename='uploads/' + image.filename) }}" class="card-img-top" alt="{{ image.description }}">
+                    <div class="card-body">
+                        <p class="card-text">{{ image.description }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Churches Gallery -->
+        <h3>Churches Section</h3>
+        <div class="row">
+            {% for image in churches %}
+            <div class="col-md-3 mb-4">
+                <div class="card">
+                    <img src="{{ url_for('static', filename='uploads/' + image.filename) }}" class="card-img-top" alt="{{ image.description }}">
+                    <div class="card-body">
+                        <p class="card-text">{{ image.description }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

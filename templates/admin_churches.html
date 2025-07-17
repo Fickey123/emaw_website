@@ -1,0 +1,195 @@
+{% extends "admin_dashboard.html" %}
+{% set active_page = "board" %}
+
+{% block content %}
+    <h4>Upload New Church</h4>
+    <form action="/admin/churches/upload" method="POST" enctype="multipart/form-data" id="churchForm">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <input name="name" class="form-control" placeholder="Church Name" required>
+            </div>
+            <div class="col-md-6">
+                <input name="region" class="form-control" placeholder="Region" required>
+            </div>
+
+            <!-- Lead Pastor -->
+            <div class="col-md-6">
+                <select name="lead_title" class="form-select" required>
+                    <option value="">Lead Pastor Title</option>
+                    <option value="Bishop">Bishop</option>
+                    <option value="Reverend">Reverend</option>
+                    <option value="Apostle">Apostle</option>
+                    <option value="Pastor">Pastor</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <input name="lead_pastor_name" class="form-control" placeholder="Lead Pastor Full Name" required>
+            </div>
+
+            <!-- Other Pastors Count -->
+            <div class="col-md-6">
+                <label for="otherPastorCount">Number of Other Pastors</label>
+                    <select id="otherPastorCount" class="form-select">
+                        <option value="0">0</option>
+                        {% for i in range(1, 6) %}
+                        <option value="{{ i }}">{{ i }}</option>
+                        {% endfor %}
+                    </select>
+            </div>
+
+            <div id="otherPastorsContainer" class="col-12 row g-2 mt-2">
+            <!-- JS will insert other pastors here -->
+            </div>
+
+            <!-- Order of Events -->
+            <div class="col-md-12">
+                <label>Order of Events Image</label>
+                <input type="file" name="order_of_events_image" class="form-control" required>
+            </div>
+
+            <div class="col-12">
+               <button class="btn btn-primary w-100">Upload</button>
+            </div>
+        </div>
+    </form>
+
+    <h4 class="text-secondary mt-5">Churches List</h4>
+    <div class="table-responsive">
+    <table class="table table-bordered table-hover text-center align-middle">
+        <thead class="table-dark">
+        <tr>
+            <th>#</th>
+            <th>Church Name</th>
+            <th>Region</th>
+            <th>Lead Pastor</th>
+            <th>Other Pastors</th>
+            <th>Order of Events</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for church in churches %}
+        <tr data-id="{{ church['id'] }}">
+            <td>{{ loop.index }}</td>
+            <td class="church-name-cell" contenteditable="false">{{ church['name'] }}</td>
+            <td class="region-cell" contenteditable="false">{{ church['region'] }}</td>
+            <td class="lead-pastor-cell" contenteditable="false">{{ church['lead_pastor_name'] }}</td>
+            <td class="other-pastors-cell" contenteditable="false">
+                <div style="white-space: pre-wrap;">
+                    {{ (church['other_pastors'] or 'None') | replace(', ', '<br>') | safe }}
+                </div>
+            </td>            
+            <td>
+                <img src="{{ url_for('static', filename='uploads/' ~ church['order_of_events_image']) }}" width="80" class="events-preview">
+                <input type="file" class="form-control form-control-sm mt-1 events-file" style="display:none;">
+            </td>              
+            <td>
+            <button class="btn btn-sm btn-primary edit-btn">Edit</button>
+            <button class="btn btn-sm btn-success save-btn d-none">Save</button>
+            <form action="/admin/churches/delete/{{ church['id'] }}" method="POST" class="d-inline">
+                <button class="btn btn-sm btn-danger" onclick="return confirm('Delete this church?')">Delete</button>
+            </form>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+
+    <script>
+  document.getElementById("otherPastorCount").addEventListener("change", function () {
+    const container = document.getElementById("otherPastorsContainer");
+    container.innerHTML = "";
+    const count = parseInt(this.value);
+
+    for (let i = 0; i < count; i++) {
+      container.innerHTML += `
+        <div class="col-md-3">
+          <select name="other_titles[]" class="form-select" required>
+            <option value="">Title</option>
+            <option value="Bishop">Bishop</option>
+            <option value="Reverend">Reverend</option>
+            <option value="Apstle">Apostle</option>
+            <option value="Pastor">Pastor</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <input name="other_names[]" class="form-control" placeholder="Other Pastor Full Name" required>
+        </div>
+      `;
+    }
+  });
+
+  document.querySelectorAll('.edit-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const row = btn.closest('tr');
+
+      // Make fields editable
+      row.querySelector('.church-name-cell').setAttribute('contenteditable', 'true');
+      row.querySelector('.region-cell').setAttribute('contenteditable', 'true');
+      row.querySelector('.lead-pastor-cell').setAttribute('contenteditable', 'true');
+
+      // For Other Pastors, we assume template has:
+      // <td><div class="other-pastors-cell" contenteditable="false" style="white-space: pre-wrap;">...</div></td>
+      const otherDiv = row.querySelector('.other-pastors-cell');
+      if (otherDiv) {
+        otherDiv.setAttribute('contenteditable', 'true');
+      }
+
+      // Show image input
+      row.querySelector('.events-file').style.display = 'block';
+
+      // Toggle buttons
+      row.querySelector('.save-btn').classList.remove('d-none');
+      btn.classList.add('d-none');
+    });
+  });
+
+  document.querySelectorAll('.save-btn').forEach((saveBtn) => {
+    saveBtn.addEventListener('click', () => {
+      const row = saveBtn.closest('tr');
+      const id = row.dataset.id;
+
+      const name = row.querySelector('.church-name-cell').innerText.trim();
+      const region = row.querySelector('.region-cell').innerText.trim();
+      const lead = row.querySelector('.lead-pastor-cell').innerText.trim();
+
+      // Process Other Pastors: read innerHTML, split on <br> or newline, strip tags, join with comma+space
+      let others = "";
+      const otherDiv = row.querySelector('.other-pastors-cell');
+      if (otherDiv) {
+        let html = otherDiv.innerHTML.trim();
+        // Split on <br> tags (various forms) or newline characters
+        let parts = html.split(/<br\s*\/?>|\r?\n/gi).map(s => {
+          // strip any HTML tags inside each part
+          const tmp = document.createElement('div');
+          tmp.innerHTML = s;
+          return tmp.textContent.trim();
+        }).filter(s => s && s.toLowerCase() !== 'none');
+        others = parts.join(', ');
+      }
+
+      const formData = new FormData();
+      formData.append('name', name);
+      formData.append('region', region);
+      formData.append('lead_pastor_name', lead);
+      formData.append('other_pastors', others);
+
+      const fileInput = row.querySelector('.events-file');
+      if (fileInput && fileInput.files[0]) {
+        formData.append('order_of_events_image', fileInput.files[0]);
+      }
+
+      fetch(`/admin/churches/edit/${id}`, {
+        method: 'POST',
+        body: formData
+      }).then(() => location.reload());
+    });
+  });
+</script>
+
+        
+      
+
+
+{% endblock %}

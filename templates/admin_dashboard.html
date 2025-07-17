@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- ✅ Bootstrap 5 CSS (CDN) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-VkTXQbN4Y3uDJ9ggsHZeqFeBiQ65A4nO/Fj4U+XmtXOpWc9NQoSMTYhXz9il+J3G" crossorigin="anonymous">
+
+  <style>
+    .nav-btn {
+      border-radius: 0;
+      padding: 0.6rem 1.2rem;
+      font-weight: 500;
+      border: none;
+      transition: all 0.2s ease;
+      text-decoration: none !important; /* 🔥 Removes underline */
+      color: #000; /* Ensures consistent color */
+    }
+  
+    .nav-btn:hover {
+      background-color: #0d6efd;
+      color: white;
+      text-decoration: none;
+    }
+  
+    .nav-btn.active {
+      background-color: #0d6efd;
+      color: white;
+    }
+    .logout-btn:hover {
+      background-color: #dc3545 !important; /* Bootstrap's danger red */
+      color: white !important;
+    }
+    .nav-section {
+      background-color: #f8f9fa;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+  </style>  
+</head>
+<body>
+
+  <!-- Big Title -->
+  <div class="py-4 bg-white shadow-sm text-center">
+    <h1 class="display-4 fw-bold text-primary">ADMIN DASHBOARD</h1>
+  </div>
+
+  <!-- Horizontal Full-Width Navbar -->
+  <div class="nav-section">
+    <div class="container-fluid px-4">
+      <div class="d-flex justify-content-between align-items-center py-2 flex-wrap">
+
+        <!-- Left Navigation Buttons -->
+        <div class="d-flex gap-2 flex-wrap">
+          <a href="/admin/board_members" class="btn nav-btn {% if active_page == 'board' %}active{% endif %}">Board Members</a>
+          <a href="/admin/pastors" class="btn nav-btn {% if active_page == 'pastors' %}active{% endif %}">Pastors</a>
+          <a href="/admin/churches" class="btn nav-btn {% if active_page == 'churches' %}active{% endif %}">Churches</a>
+          <a href="/admin/events_announcements" class="btn nav-btn {% if active_page == 'events' %}active{% endif %}">Events & Announcements</a>
+          <a href="/admin/upload_gallery" class="btn nav-btn {% if active_page == 'gallery' %}active{% endif %}">Gallery</a>
+          <a href="{{ url_for('logout_admin') }}" class="btn nav-btn logout-btn">Logout</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Main Content -->
+  <div class="container py-4">
+    {% block content %}{% endblock %}
+  </div>
+
+
+  <!-- ✅ Bootstrap 5 JS Bundle (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-Tvmj7u9fH5cuO2ZstVa0Kpx3h8jG0kTtH1wBcQzVGXc0DHD91KWTnFev6TAwWgoX" crossorigin="anonymous"></script>
+
+</body>
+</html>

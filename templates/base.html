@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>EMAW - Evangelical Missions Across the World</title>  
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">   
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+      @media (max-width: 576px) {
+        .navbar .btn {
+          font-size: 0.7rem;
+          padding: 0.25rem 0.4rem;
+        }
+
+        .navbar .nav-buttons {
+          flex-wrap: nowrap;
+          width: 100%;
+          flex: 1 1 auto;
+        }
+
+        .navbar .nav-buttons a {
+          flex: 1 1 auto;
+          text-align: center;
+        }
+      }
+
+      @media (min-width: 577px) {
+        .navbar .nav-buttons {
+          justify-content: flex-end;
+        }
+      }
+    </style>
+  </head>
+  <body style="background-color: #f8f9fa;">
+    <!-- Navbar -->
+    <nav class="navbar navbar-light bg-light shadow-sm">
+      <div class="container-fluid d-flex flex-wrap align-items-center justify-content-between">
+        
+        <!-- Navbar Brand -->
+        <div class="navbar-brand fw-bold d-flex align-items-center">
+          <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="EMAW Logo" style="height: 30px; margin-right: 8px;">
+          EVANGELICAL MISSIONS ACROSS THE WORLD
+        </div>
+
+        <!-- Navbar Buttons -->
+        <div class="d-flex nav-buttons flex-row flex-grow-1 flex-wrap justify-content-end">
+          <a class="btn btn-outline-light btn-sm mx-1 my-1" href="{{ url_for('home') }}">Home</a>
+          <a class="btn btn-outline-light btn-sm mx-1 my-1" href="{{ url_for('about') }}">About Us</a>
+          <a class="btn btn-outline-light btn-sm mx-1 my-1" href="{{ url_for('ministries') }}">Ministries</a>
+          <a class="btn btn-outline-light btn-sm mx-1 my-1" href="{{ url_for('leadership') }}">Leadership</a>
+          <a class="btn btn-outline-light btn-sm mx-1 my-1" href="{{ url_for('sermons') }}">Sermons & Gallery</a>
+          <a class="btn btn-outline-light btn-sm mx-1 my-1" href="{{ url_for('events') }}">Events & Announcements</a>
+        </div>
+
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container py-4">
+      {% block content %}{% endblock %}
+    </div>
+
+    <!-- Footer Section -->
+    <!-- Donation Section -->
+    <div class="footer-donation-section text-white py-5">
+      <section class="container my-5">
+        <h3 class="text-center text-danger mb-4">Support Our Ministry</h3>
+        <p class="fw-bold fs-5">
+          Your generosity fuels the goal of our church — reaching souls, supporting communities, and transforming lives through the love of Christ. Every offering, big or small, makes a difference. Sow a seed today and be a part of something eternal. May God bless you abundantly as you give from the heart.
+        </p>
+        <div class="text-center">
+          <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#donateModal">donate</button>
+        </div>
+        <!-- Modal -->
+        <div class="modal fade" id="donateModal" tabindex="-1" aria-labelledby="donateModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <form id="donationForm" class="modal-content" method="POST" action="{{ url_for('submit_donation') }}">
+              <div class="modal-header">
+                <h5 class="modal-title">Make a Donation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body">
+                <!-- Amount input remains the same -->
+                <div class="mb-3">
+                  <label for="donationAmount" class="form-label">Amount</label>
+                  <div class="input-group">
+                    <select name="currency" id="currency" class="form-select" style="max-width: 100px;" required>
+                      <option value="KES">KES</option>
+                      <option value="USD">USD</option>
+                    </select>
+                    <input type="number" id="donationAmount" name="amount" class="form-control" placeholder="Enter amount" required>
+                  </div>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label">Payment Method</label>
+                  <select class="form-select" name="method" id="donationMethod" required>
+                    <option value="">Select a payment method</option>
+                    <option value="mpesa">M-Pesa (Bank)</option>
+                    <option value="paypal">PayPal</option>
+                  </select>
+                </div>
+
+                <!-- Phone for M-Pesa -->
+                <div class="mb-3 d-none" id="phoneGroup">
+                  <label for="phone" class="form-label">Phone Number</label>
+                  <input type="tel" id="phone" class="form-control" placeholder="07XXXXXXXX">
+                </div>
+
+                <!-- PayPal Buttons Container -->
+                <div id="paypal-button-container" class="d-none mt-3"></div>
+              </div>
+              <div class="modal-footer">
+                <button type="submit" class="btn btn-danger">Continue to Pay</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- PayPal SDK -->
+    <script src="https://www.paypal.com/sdk/js?client-id=AZqAua02WJpwIyLMgCtjN1JhgTKMtOWGI2c9Iui7NvdRozk9Wcc5zB27-YK_4UOoUytpBGvNeoviMMm2&currency=USD"></script>
+
+    <script>
+    const donationForm = document.getElementById('donationForm');
+    const methodSelect = document.getElementById('donationMethod');
+    const phoneGroup = document.getElementById('phoneGroup');
+    const paypalButtons = document.getElementById('paypal-button-container');
+
+    // Show/hide phone or PayPal based on method
+    methodSelect.addEventListener('change', function () {
+      const method = this.value;
+      if (method === 'mpesa') {
+        phoneGroup.classList.remove('d-none');
+        paypalButtons.classList.add('d-none');
+      } else if (method === 'paypal') {
+        phoneGroup.classList.add('d-none');
+        paypalButtons.classList.remove('d-none');
+      } else {
+        phoneGroup.classList.add('d-none');
+        paypalButtons.classList.add('d-none');
+      }
+    });
+
+    donationForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      const amount = document.getElementById('donationAmount').value;
+      const method = methodSelect.value;
+      const phone = document.getElementById('phone').value;
+
+      if (!amount || !method) {
+        alert('Please enter amount and select method.');
+        return;
+      }
+
+      if (method === 'mpesa') {
+        if (!phone.match(/^07\d{8}$/)) {
+          alert('Enter a valid Safaricom number.');
+          return;
+        }
+        // Trigger STK Push
+        fetch(`/pay/mpesa?amount=${amount}&phone=${phone}`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.ResponseCode === '0') {
+              alert('STK push sent! Enter M-Pesa PIN on your phone.');
+            } else {
+              alert('Failed to initiate M-Pesa payment.');
+            }
+          })
+          .catch(() => alert('M-Pesa error. Please try again.'));
+      }
+    });
+
+    // Render PayPal buttons
+    paypal.Buttons({
+      createOrder: function (data, actions) {
+        const amount = document.getElementById('donationAmount').value;
+        if (!amount || amount <= 0) {
+          alert('Enter a valid amount');
+          return;
+        }
+        return actions.order.create({
+          purchase_units: [{
+            amount: { value: amount }
+          }]
+        });
+      },
+      onApprove: function (data, actions) {
+        return actions.order.capture().then(function (details) {
+          alert(`Thank you, ${details.payer.name.given_name}! Your donation was successful.`);
+        });
+      }
+    }).render('#paypal-button-container');
+    </script>
+
+
+    <!-- Main Footer Section -->
+    <div class="footer-main-section text-black py-5">
+      <div class="container">
+        <!-- Top Footer Row -->
+        <div class="row text-center text-md-start">
+
+          <!-- Address -->
+          <div class="col-md-4 mb-4">
+            <h5 class="fw-bold">Evangelical Missions Across the World</h5>
+            <p class="mb-1">PO BOX 28340-00200,</p>
+            <p>NAIROBI-KENYA</p>
+            <p class="mb-1">Phone: <a href="tel:+254720438243">+254 720438243</a></p>
+            <p class="mb-1">Email: <a href="mailto:emawkenya700@gmail.com">emawkenya700@gmail.com</a></p>
+          </div>
+
+          <!-- Useful Links (Single Column, Balanced) -->
+          <div class="col-md-4 mb-4">
+            <h5 class="fw-bold">Useful Links</h5>
+            <ul class="list-unstyled">
+              <li><a href="{{ url_for('home') }}">Home</a></li>
+              <li><a href="{{ url_for('about') }}">About Us</a></li>
+              <li><a href="{{ url_for('ministries') }}">Ministries</a></li>
+              <li><a href="{{ url_for('leadership') }}">Leadership</a></li>
+              <li><a href="{{ url_for('sermons') }}">Sermons/Media</a></li>
+              <li><a href="{{ url_for('events') }}">Events</a></li>
+            </ul>
+          </div>
+
+          <!-- Location -->
+          <div class="col-md-4 mb-4">
+            <h5 class="fw-bold">Our Location</h5>
+            <p class="mb-1">EMAW Headquarters</p>
+            <p class="mb-1">Nairobi</p>
+            <p>Visit us during our Sunday services and midweek fellowships!</p>
+
+            <!-- Get Directions Button -->
+            <a href="https://www.google.com/maps/search/?api=1&query=-1.31628,36.79525"
+              target="_blank"
+              class="btn btn-outline-primary mt-3">
+              Get Directions
+            </a>
+          </div>
+        </div>
+
+        <!-- Social Media Row -->
+        <div class="text-center pt-4 border-top mt-4">
+          <div class="d-flex justify-content-center flex-wrap gap-4">
+            <a href="https://www.facebook.com/profile.php?id=100069006352070" class="text-dark text-decoration-none d-flex align-items-center gap-2">
+              <i class="bi bi-facebook fs-4"></i><span>Facebook</span>
+            </a>
+            <a href="https://youtube.com/@emawtv?feature=shared" class="text-dark text-decoration-none d-flex align-items-center gap-2">
+              <i class="bi bi-youtube fs-4"></i><span>YouTube</span>
+            </a>
+            <a href="#" class="text-dark text-decoration-none d-flex align-items-center gap-2">
+              <i class="bi bi-twitter fs-4"></i><span>Twitter</span>
+            </a>
+            <a href="#" class="text-dark text-decoration-none d-flex align-items-center gap-2">
+              <i class="bi bi-instagram fs-4"></i><span>Instagram</span>
+            </a>
+            <a href="https://www.tiktok.com/@emaw.church?_t=ZM-8x64TiLJifY&_r=1 " class="text-dark text-decoration-none d-flex align-items-center gap-2">
+              <i class="bi bi-tiktok fs-4"></i><span>TikTok</span>
+            </a>
+          </div>
+        </div>
+
+    <!-- Bottom Footer -->
+    <footer class="footer-bottom text-white text-center py-3">
+      <p class="mb-1">&copy; 2025 Evangelical Missions Across the World</p>
+      <p class="mb-0">
+        Hosted by <strong>YourHost</strong> |
+        Designed by <strong><a href="mailto:fickeymwakeh@gmail.com">Fickey IT Ventures</a></strong>
+      </p>
+    </footer>
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

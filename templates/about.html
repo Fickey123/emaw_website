@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block title %}About Us - EMAW{% endblock %}
+{% block content %}
+  <h2>About Us</h2>
+  <section class="mt-4 container">
+    <h3 class="mb-4">Our Background</h3>
+  
+    <div class="card shadow-lg border-0">
+      <div class="row g-0">
+        <!-- Image Column -->
+        <div class="col-md-4">
+          <img src="{{ url_for('static', filename='images/bishop.jpg') }}" class="img-fluid h-100 object-fit-cover rounded-start" alt="Our Background Image">
+        </div>
+  
+        <!-- Text Column -->
+        <div class="col-md-8">
+          <div class="card-body">
+            <p>
+              The Evangelical Missions Across the World is a registered church founded on Christian values. The church was registered in 2009 in Kenya. The founder of EMAW church is Bishop Daniel Muli.
+            </p>
+            <p>
+              The founder observed the great need of the people and believed that the church should provide solutions spiritually, socially, economically and mentally.
+            </p>
+            <p>
+              Since the beginning, EMAW has actively been involved in evangelism, discipleship, planting new churches, ordaining ministers, organizing conferences, and assisting the oppressed.
+            </p>
+            <p>
+              As a church, we are called to serve the people of God with the authorized and inspired word of God to bring transformation in the lives of people. (Romans 12:2)
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>  
+
+  <!-- Mission, Vision & Focus Section -->
+  <div class="container my-5">
+
+    <!-- VISION -->
+    <div class="row py-4 px-3 align-items-center" style="background-color: #dee2e6;">
+      <div class="col-md-3 fw-bold text-uppercase text-danger" style="font-size: 2.0rem;">
+        Vision
+      </div>
+      <div class="col-md-9 text-dark" style="font-size: 1.7rem;">
+        To impact Kenya and all other parts of the world with the Gospel of our Lord Jesus Christ in the power of Holy Spirit.
+      </div>
+    </div>
+  
+    <!-- MISSION -->
+    <div class="row py-4 px-3 align-items-center bg-white">
+      <div class="col-md-3 fw-bold text-uppercase text-danger" style="font-size: 2.0rem;">
+        Mission
+      </div>
+      <div class="col-md-9 text-dark" style="font-size: 1.7rem;">
+        To know God and to make him be known to the whole world through Evangelism and Discipleship.
+      </div>
+    </div>
+  
+    <!-- FOCUS -->
+    <div class="row py-4 px-3 align-items-center" style="background-color: #dee2e6;">
+      <div class="col-md-3 fw-bold text-uppercase text-danger" style="font-size: 2.0rem;">
+        Focus
+      </div>
+      <div class="col-md-9 text-dark" style="font-size: 1.7rem;">
+        To grow together as each part of the body of Christ does its work.
+      </div>
+    </div>
+  
+  </div>  
+
+  <!-- Core Values Section -->
+  <section id="core-values">
+    <div class="container my-5">
+      <h4 >Our Core Values</h4>
+      <div class="row g-4">
+
+        <!-- First Row -->
+        <div class="col-md-6">
+          <div class="p-4 h-100 border rounded shadow-sm bg-light d-flex align-items-center">
+            <span>God’s Word</span>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="p-4 h-100 border rounded shadow-sm bg-light d-flex align-items-center">
+            <span>God’s Calling</span>
+          </div>
+        </div>
+
+        <!-- Second Row -->
+        <div class="col-md-6">
+          <div class="p-4 h-100 border rounded shadow-sm bg-light d-flex align-items-center">
+            <span>Integrity</span>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="p-4 h-100 border rounded shadow-sm bg-light d-flex align-items-center">
+            <span>Passion for the Lost</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Objectives Section -->
+  <section id="objectives">
+    <div class="container my-5">
+      <h4>Our Objectives</h4>
+      <ul class="list-unstyled ps-3">
+        <li class="mb-2 fw-medium">a. To preach and spread the word of God.</li>
+        <li class="mb-2 fw-medium">b. To build, buy or hire and maintain the church building, social halls e.t.c.</li>
+        <li class="mb-2 fw-medium">c. To baptize, conduct weddings, burials, conferences and community social work as to improve living standards of the people.</li>
+        <li class="mb-2 fw-medium">d. To assist the needy like orphans, widows and street children.</li>
+        <li class="mb-2 fw-medium">e. To plant churches, to ordain and license pastors to carry out the objectives of the EMAW church.</li>
+        <li class="mb-2 fw-medium">f. To organize christian rallies, conventions, camps, street meetings and open air crusades in church halls, tents and other convenient places.</li>
+        <li class="mb-2 fw-medium">g. To enter into lease arragements with individuals, government for hire of buildings, houses, open space to enhance the objectives of EMAW church</li>
+        <li class="mb-2 fw-medium">h. To ask and accept donations from members, government, charitable organizations, non-members and any person corporate or private from all parts of the world.</li>
+        <li class="mb-2 fw-medium">i. To borrow money from banks, Saccos, charitable organizations or well wishers as recommended by the executive board committee. The monies borrowed must be used exclussively for enhancing the objectives of EMAW church.</li>
+        <li class="mb-2 fw-medium">j. The organization of EMAW is non political and non profit making.</li>
+        <li class="mb-2 fw-medium">k. To buy goods and services necessary for the furtherance of objectivesof the EMAW church, including building materials, training equipments and stationeries.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Statement of Faith Section -->
+  <section id="statement of faith">
+    <div class="container my-5">
+      <h4>Our Statement of Faith</h4>
+      <ul class="list-unstyled ps-3">
+        <li class="mb-2 fw-medium">EMAW church believes in the fundamental teaching of the bible, Gods infallible written word "the sixty-six books of old and new testament".</li>
+        <li class="mb-2 fw-medium">a) We believe there is one true God, externally existing in three persons - father, son and THe Holy Spirit -(holy trinity)- that is three in one and one in three. Deutronomy 6:4, Mathew 28:18, John 1:1-3, 18, Acts 5:3-4</li>
+        <li class="mb-2 fw-medium">b) We believe the bible to be inspired authoritative word of God. II Peter 1:21.</li>
+        <li class="mb-2 fw-medium">c) We believe in the deity of Jesus Christ, his incarmation, crucification, define bodily resurrection, his ascension to glory and his promisedsecond coming. 1 Cor 15:4,14,20, Luke 24:36-43, John 20:24-29, Acts 1:9-11, Ephesians 1:20, 1 Timothy 2:5, Mathew 24:44, Rev. 19:1-22.</li>
+        <li class="mb-2 fw-medium">d) We believe in Jesus power to save, to heal, to sustain in christians to live holy and righteous life.</li>
+        <li class="mb-2 fw-medium">e) We believe in salvation through the redeeming blood of Jesus Christ, Hebrews 9:22.</li>
+        <li class="mb-2 fw-medium">f) We believe in water baptism to the saved, public holy matrimony, dedication of children and the lords supper as commanded in the Holy Bible, Mark 16:16, Mark 10:7, 1 Samuel 1:20, 1 Cor. 11:28</li>
+        <li class="mb-2 fw-medium">g) We believe in the bodily resurrection, eternal life for the righteous and eternal punishment for the wicked. 2 Cor. 5:8, Phillipians 1:23, Luke 23:39-43, 1 Cor. 15:12-58, 1 Thessolonians 4:13-18.</li>
+        <li class="mb-2 fw-medium">h) We believe Jesus Christ is the head of the church, his body which is composed of all men, living and dead who have been joined to him through saving faith, Collosians 1:18, Ephesians 1:22.</li>
+        <li class="mb-2 fw-medium">i) We believe Jesus Christ commanded all believers to proclaim the gospel throughout the world and to disciple men of every nation, Mthew 28:18-20.</li>
+        <li class="mb-2 fw-medium">j) We believe in the operation of the gifts of the Holy Spirit as enumerated in (1 Corinthians 12:12,-14, Romans 12:6-8) as manifested in the early church.</li>
+      </ul>
+    </div>
+  </section>
+
+{% endblock %}

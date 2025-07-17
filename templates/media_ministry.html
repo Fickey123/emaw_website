@@ -1,0 +1,37 @@
+{% extends 'ministry.html' %}
+
+{% block title %}Media Ministry{% endblock %}
+
+{% block content %}
+  <h2 class="text-danger fw-bold mb-4">Media Ministry</h2>
+  <p class="fw-bold fs-5">
+    Media Team
+  </p>
+  <p class="fs-5">
+    Our Media Team ensures the Gospel reaches far and wide through sound, video, and projection systems. They operate with excellence behind the scenes to support all church services and events.
+  </p>
+  <p class="fw-bold fs-5">
+    Social Media
+  </p>
+  <p class="fs-5">
+    We are active on social media platforms like Facebook, YouTube, and Instagram, where we share sermons, devotions, event updates, and live services. Follow our pages below to stay connected and spiritually fed.
+  </p>
+  <p class="fs-5">
+      <div class="mb-4">
+          <a href="https://www.facebook.com/profile.php?id=100069006352070" class="text-dark me-3"><i class="bi bi-facebook fs-4"></i></a>
+          <a href="https://youtube.com/@emawtv?feature=shared" class="text-dark me-3"><i class="bi bi-youtube fs-4"></i></a>
+          <a href="#" class="text-dark me-3"><i class="bi bi-twitter fs-4"></i></a>    
+          <a href="#" class="text-dark me-3"><i class="bi bi-instagram fs-4"></i></a>
+          <a href="https://www.tiktok.com/@emaw.church?_t=ZM-8x64TiLJifY&_r=1 " class="text-dark me-3"><i class="bi bi-tiktok fs-4"></i></a>
+
+          <!-- Gallery Tab -->
+          <a href="{{ url_for('sermons') }}" class="btn btn-outline-dark ms-2 mt-2">📸 View Gallery</a>
+        </div>
+  </p>
+  <p class="fw-bold fs-5">
+    Drama Skits
+  </p>
+  <p class="fs-5">
+    The Media Ministry also supports our Drama Team, which presents Gospel truths through theatrical skits and creative storytelling. These performances are used in services and outreach events to impact hearts with visual illustrations of faith.
+  </p>
+{% endblock %}

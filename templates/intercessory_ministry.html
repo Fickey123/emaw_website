@@ -1,0 +1,49 @@
+{% extends 'ministry.html' %}
+
+{% block title %}Intercessory Ministry{% endblock %}
+
+{% block content %}
+  <h2 class="text-danger fw-bold mb-4">Intercessory Ministry</h2>
+  <p class="fw-bold fs-5">
+    Prayer and Fasting
+  </p>
+  <p class="fs-5">
+    The Intercessory Ministry leads the church in times of dedicated prayer and fasting. We believe in the power of seeking God fervently to break strongholds and align with His will.
+  </p>
+  <p class="fw-bold fs-5">
+    Prayer Summits
+  </p>
+  <p class="fs-5">
+    We host powerful prayer summits that gather believers to intercede for the nation, the church, and individual needs. These summits are filled with prophetic declarations and divine encounters.
+  </p>
+  <p class="fw-bold fs-5">
+    Prayer Retreats
+  </p>
+  <p class="fs-5">
+    Prayer retreats offer a quiet, focused environment where intercessors spend extended time in the presence of God. It’s a time for deep reflection, revelation, and spiritual empowerment.
+  </p>
+
+  <h3 class="text-danger fw-bold mt-5">Submit a Prayer Request</h3>
+  <p class="fs-5">
+    Cast all your cares on Him, because He cares for you.” – 1 Peter 5:7
+  </p>
+  <p class="fs-5">
+    If you're burdened, seeking guidance, healing, or breakthrough — you're not alone. Our intercessory team is ready to stand with you in prayer. Please share your request below, and we will faithfully lift it before God.
+  </p>
+  <form id="prayerRequestForm" method="POST" action="{{ url_for('submit_prayer_request') }}">
+    <div class="mb-3">
+      <label for="name" class="form-label">Name</label>
+      <input type="text" name="name" id="name" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label for="contact" class="form-label">Contact</label>
+      <input type="text" name="contact" id="contact" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label for="description" class="form-label">Prayer Item Description</label>
+      <textarea name="description" id="description" rows="4" class="form-control" placeholder="Describe your prayer request..." required></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit Prayer Request</button>
+  </form>
+
+{% endblock %}

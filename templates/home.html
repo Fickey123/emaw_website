@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block title %}Home - EMAW{% endblock %}
+
+{% block content %}
+  <style>
+    .hero-section {
+      position: relative;
+      background: none; /* Remove background here */
+      min-height: 60vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding-top: 3rem;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    .hero-section::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      background: url('{{ url_for("static", filename="images/logo.jpg") }}') center center no-repeat;
+      background-size: cover;
+      opacity: 0.15; /* Make background image faint */
+      z-index: 1;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2; /* Ensure text is above faint image */
+      text-align: center;
+    }
+    .welcome-heading {
+      color: #007BFF; /* Bootstrap Primary Blue */
+      font-weight: bold;
+      font-size: 3.0rem;
+    }
+
+    .hero-content .lead {
+      color: #007BFF;
+      font-size: 3.0rem; /* Increase font size */
+      font-weight: bold;
+    }
+
+    .cycle-title {
+      color: #dc3545; /* Bootstrap Danger (reddish) */
+      font-size: 3.0rem;
+      font-weight: bold;
+    }
+
+    .cycle-description {
+      color: black;
+      font-size: 2.2rem;
+      margin-top: 0.5rem;
+    }
+
+    .fade-in {
+      animation: fadein 1s ease-in-out;
+    }
+
+    @keyframes fadein {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  </style>
+
+  <!-- Hero Section with Background Logo -->
+  <div class="hero-section">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <h1 class="welcome-heading text-center">
+        <span class="d-block">Welcome</span>
+        <span class="d-block">Evangelical Missions Across the World</span>
+        <span class="d-block">EMAW</span>
+      </h1>
+      <div id="cycleContainer" class="fade-in">
+        <div class="cycle-title" id="cycleTitle"></div>
+        <div class="cycle-description" id="cycleDescription"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vision/Mission Cycling Script -->
+  <script>
+    const cycleData = [
+    {
+      title: "Vision",
+      description: "To impact Kenya and all other parts of the world with the Gospel of our Lord Jesus Christ in the power of Holy Spirit."
+    }, 
+    {
+      title: "Mission",
+      description: "To know God and to make him be known to the whole world through Evagelism and Discipleship."
+    }
+    ];
+
+    let index = 0;
+    const titleEl = document.getElementById("cycleTitle");
+    const descEl = document.getElementById("cycleDescription");
+    const container = document.getElementById("cycleContainer");
+
+    function updateCycle() {
+      container.classList.remove("fade-in"); // reset animation
+      void container.offsetWidth; // trigger reflow
+      container.classList.add("fade-in");
+
+      titleEl.textContent = cycleData[index].title;
+      descEl.textContent = cycleData[index].description;
+      index = (index + 1) % cycleData.length;
+    }
+
+    updateCycle(); // initial
+    setInterval(updateCycle, 10000); // switch every 10 seconds
+  </script>
+
+  <section class="summary-section background-section">
+    <h2 class="mb-4">Our Background</h2>
+
+    <div class="card shadow-lg border-0">
+      <div class="row g-0">
+        <!-- Image Column -->
+        <div class="col-md-4">
+          <img src="{{ url_for('static', filename='images/bishop.jpg') }}" class="img-fluid h-100 object-fit-cover rounded-start" alt="Our Background Image">
+        </div>
+
+        <!-- Text Column -->
+        <div class="col-md-8">
+          <div class="card-body">
+            <p>
+              The Evangelical Missions Across the World is a registered church founded on Christian values. The church was registered in 2009 in Kenya. The founder of EMAW church is Bishop Daniel Muli.
+            </p>
+            <p>
+              The founder observed the great need of the people and believed that the church should provide solutions spiritually, socially, economically and mentally.
+            </p>
+            <p>
+              Since the beginning, EMAW has actively been involved in evangelism, discipleship, planting new churches, ordaining ministers, organizing conferences, and assisting the oppressed.
+            </p>
+            <p>
+              As a church, we are called to serve the people of God with the authorized and inspired word of God to bring transformation in the lives of people. (Romans 12:2)
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section> 
+
+  <section class="summary-section core-values-section">
+    <h2>Our Core Values</h2>
+    <p>Our ministry is guided by deep-rooted principles and values that reflect our mission and vision...</p>
+    <a href="about#core-values" class="btn btn-primary">Learn More</a>
+  </section>
+
+  <section class="summary-section objectives-section">
+    <h2>Our Objectives</h2>
+    <p>We are committed to spreading the Gospel, empowering communities, and nurturing spiritual growth through meaningful programs....</p>
+    <a href="about#objectives" class="btn btn-primary">Learn More</a>
+  </section>
+
+  <section class="summary-section ministries-section">
+    <h2>Our Ministries</h2>
+    <p>Our diverse ministries serve people of all ages and backgrounds, meeting spiritual, emotional, and physical needs....</p>
+    <a href="ministries#ministries" class="btn btn-primary">Learn More</a>
+  </section>
+
+  <section class="summary- departments-section">
+    <h2>Our Departments</h2>
+    <p>Each department plays a unique role in coordinating activities, outreach, and services that advance our mission....</p>
+    <a href="ministries#departments" class="btn btn-primary">Learn More</a>
+  </section>
+
+  <section class="summary-section pastors-section">
+    <h2>EMAW Church Pastors</h2>
+    <p>Meet the dedicated men and women of God who provide leadership, spiritual guidance, and pastoral care to our congregation....</p>
+    <a href="leadership#pastors" class="btn btn-primary">View</a>
+  </section>
+
+  <section class="summary-section churches-section">
+    <h2>Our Churches</h2>
+    <p>Discover the various branches and fellowships under our ministry across the region, each committed to community transformation....</p>
+    <a href="leadership#churches" class="btn btn-primary">View</a>
+  </section>
+
+  <section class="summary-section events-section">
+    <h2>Upcoming Events</h2>
+    <p>Join us for upcoming events that offer fellowship, worship, teaching, and community impact opportunities.</p>
+
+    {% if events_preview %}
+      {% for event in events_preview %}
+        <div class="row align-items-center mb-2 bg-light border rounded shadow-sm p-3">
+          <div class="col-md-2 text-center fw-bold text-primary">
+            {% if event.end_date %}
+              {{ event.date.strftime('%b %d, %Y') }} - {{ event.end_date.strftime('%b %d, %Y') }}
+            {% else %}
+              {{ event.date.strftime('%b %d, %Y') }}
+            {% endif %}
+          </div>
+          <div class="col-md-4">
+            <span class="fw-semibold">{{ event.title }}</span>
+          </div>
+          <div class="col-md-3 text-muted">
+            {{ event.time }}
+          </div>
+          <div class="col-md-3 text-muted">
+            {{ event.venue }}
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p class="text-muted">No upcoming events at the moment.</p>
+    {% endif %}
+
+    <a href="{{ url_for('events') }}" class="btn btn-primary mt-3">View All</a>
+  </section>
+  
+{% endblock %}

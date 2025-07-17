@@ -1,0 +1,62 @@
+{% extends "admin_dashboard.html" %}
+{% set active_page = "board" %}
+
+{% block content %}
+<style>
+    .card-img-top {
+        height: 200px;
+        object-fit: cover;
+    }
+    .card {
+        height: 100%;
+    }
+</style>
+
+<div class="container my-5">
+    <h2 class="mb-4">Upload Gallery Image</h2>
+    <form method="POST" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label for="image" class="form-label">Select Image</label>
+            <input type="file" class="form-control" name="image" required>
+        </div>
+        <div class="mb-3">
+            <label for="description" class="form-label">Image Description</label>
+            <input type="text" class="form-control" name="description" required>
+        </div>
+        <div class="mb-3">
+            <label for="category" class="form-label">Category</label>
+            <select class="form-select" name="category" required>
+                <option value="pastors">Pastors</option>
+                <option value="congregation">Congregation</option>
+                <option value="events">Events</option>
+                <option value="churches">Churches</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Upload</button>
+    </form>
+
+    <hr class="my-5">
+
+    {% set categories = ['pastors', 'congregation', 'events', 'churches'] %}
+    {% for cat in categories %}
+        <h3 class="mt-5 text-capitalize">{{ cat.replace('_', ' ') }} Section</h3>
+        <div class="row">
+            {% for image in images %}
+                {% if image.category == cat %}
+                <div class="col-md-3 mb-4">
+                    <div class="card h-100">
+                        <img src="{{ url_for('static', filename='uploads/' + image.filename) }}" class="card-img-top" alt="{{ image.description }}">
+                        <div class="card-body">
+                            <p class="card-text">{{ image.description }}</p>
+                            <form method="POST" action="{{ url_for('delete_image', image_id=image.id) }}">
+                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

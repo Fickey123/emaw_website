@@ -1,0 +1,41 @@
+{% extends 'ministry.html' %}
+
+{% block title %}Children Ministry{% endblock %}
+
+{% block content %}
+  <h2 class="text-danger fw-bold mb-4">Children Ministry</h2>
+  <p class="fw-bold fs-5">
+    Sunday School
+  </p>
+  <p class="fs-5">
+    Our Sunday School program teaches children the Word of God in a fun and engaging way. With Bible stories, songs, and crafts, we lay a strong spiritual foundation in the hearts of our little ones.
+  </p>
+  <p class="fw-bold fs-5">
+    Bible Club
+  </p>
+  <p class="fs-5">
+    The Bible Club is an after-school spiritual program that encourages kids to explore the Bible more deeply. Through games, memory verses, and interactive lessons, children grow in their faith and love for God.
+  </p>
+  <p class="fw-bold fs-5">
+    Goshen Pre-School and Day Care
+  </p>
+  <p class="fs-5">
+   <div class="card shadow-lg border-0">
+      <div class="row g-0">
+        <!-- Image Column -->
+        <div class="col-md-4">
+          <img src="{{ url_for('static', filename='images/school.jpg') }}" class="img-fluid h-100 object-fit-cover rounded-start" alt="Our Background Image">
+        </div>
+
+        <!-- Text Column -->
+        <div class="col-md-8">
+          <div class="card-body">
+            <p class="fs-5">
+              Goshen Pre-School and Day Care is a Christ-centered learning environment where children receive quality education and care. We nurture their academic, spiritual, and social growth, preparing them for a bright future.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </p>
+{% endblock %}

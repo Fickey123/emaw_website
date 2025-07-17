@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+{% block title %}Leadership - EMAW{% endblock %}
+{% block content %}
+  <h2 class="text-center text-primary mb-4 fw-bold" style="font-size: 2rem;">CHURCH LEADERSHIP</h2>
+  <!-- Church Leadership: Governing Committees Section -->
+  <section class="container my-5">
+    <h3>Governing Committees</h3>
+    <div class="row g-4">
+      <!-- Committee Cards -->
+      <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body text-center">
+            <h5 class="card-title">Executive Board Committee</h5>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body text-center">
+            <h5 class="card-title">Regional Committee</h5>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body text-center">
+            <h5 class="card-title">Sub-regional Committee</h5>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body text-center">
+            <h5 class="card-title">Area Committee</h5>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body text-center">
+            <h5 class="card-title">Local Church Committee</h5>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body text-center">
+            <h5 class="card-title">Project Committee</h5>
+          </div>
+        </div>
+      </div>
+
+      <!-- Optional Empty Column to balance layout -->
+      <div class="col-md-4"></div>
+    </div>
+  </section>
+
+  <!-- Executive Board Members Section -->
+  <section id="board-members" class="container my-5">
+    <h3>Board Members</h3>
+    <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-3">
+      {% for member in board_members %}
+      <div class="col-md-6 col-lg-3">
+        <div class="card h-100 shadow-sm">
+          <img src="{{ url_for('static', filename='uploads/' ~ member.image) }}" class="card-img-top" alt="Board Member" style="height: 320px;">
+          <div class="card-body">
+            <h5 class="card-title">
+              {% if member.title.lower() == "reverend" %}
+                Rev {{ member.name }}
+              {% else %}
+                {{ member.title | capitalize }} {{ member.name }}
+              {% endif %}
+            </h5>
+            <ul class="list-unstyled card-text mb-0">
+              <li><strong>Position:</strong> {{ member.position }}</li>
+              <li><strong>Region:</strong> {{ member.region }}</li>
+              <li><strong>Church:</strong> {{ member.church }}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <p class="text-center">No board members found.</p>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- Pastors Section -->
+  <section id="pastors" class="py-5 bg-light">
+    <div class="container">
+      <h3>EMAW Church Pastors</h3>
+      <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-3">
+        {% for pastor in pastors %}
+        <div class="col-md-6 col-lg-3">
+          <div class="card h-100 shadow-sm">
+            <img src="{{ url_for('static', filename='uploads/' ~ pastor.image) }}" class="card-img-top" alt="{{ pastor.name }}" style="height: 350px;">
+            <div class="card-body text-center">
+              <h5 class="card-title">
+                {% if pastor.title.lower() == "reverend" %}
+                  Rev {{ pastor.name }}
+                {% else %}
+                  {{ pastor.title }} {{ pastor.name }}
+                {% endif %}
+              </h5>
+              {% if pastor.church %}
+                <p class="card-text mb-1"><strong>Church:</strong> {{ pastor.church }}</p>
+              {% endif %}
+              {% if pastor.bio %}
+                <p class="card-text">{{ pastor.bio }}</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <!-- Churches Section -->
+  <section id="churches" class="mt-5">
+    <h3>Our Churches</h3>
+    {% for region, churches in churches_by_region.items() %}
+    <div class="py-4 px-3 my-4" style="background-color: #e2eef5; border-left: 5px solid #3399ff;">
+      <h4 class="text-dark fw-bold">{{ region }} Region</h4>
+    </div>
+  
+    <div class="table-responsive mb-5">
+      <table class="table table-bordered align-middle text-center" style="background-color: #f1f9ff; border-left: 5px solid #3399ff;">
+        <thead class="table-blue">
+          <tr>
+            <th>Church Name</th>
+            <th>Lead Pastor</th>
+            <th>Other Pastors</th>
+            <th>Order of Events</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for church in churches %}
+          <tr style="background-color: {{ loop.index % 2 == 0 and '#ffffff' or '#e0e0e0' }};">
+            <!-- ✅ Church Name (Fixed from church_name to name) -->
+            <td class="fw-semibold text-uppercase">{{ church['name'] }}</td>
+  
+            <!-- ✅ Lead Pastor -->
+            <td>
+              {% if church['lead_image'] %}
+                <img src="{{ url_for('static', filename='uploads/' ~ church['lead_image']) }}" class="img-thumbnail mb-2" style="width: 80px; height: auto;">
+              {% endif %}
+              <div>
+                {{ church['lead_pastor_title'] if church['lead_pastor_title'] else '' }}
+                {{ church['lead_pastor_name'] }}
+              </div>              
+            </td>
+  
+            <!-- ✅ Other Pastors -->
+            <td class="text-start">
+              {% if church.parsed_other_pastors %}
+                {% for pastor in church.parsed_other_pastors %}
+                  <div class="mb-1">{{ pastor }}</div>
+                {% endfor %}
+              {% else %}
+                <span class="text-muted">None</span>
+              {% endif %}
+            </td>
+  
+            <!-- ✅ Order of Events Image -->
+            <td>
+              {% if church['order_of_events_image'] %}
+                <a href="#" data-bs-toggle="modal" data-bs-target="#orderImageModal">
+                  <img src="{{ url_for('static', filename='uploads/' ~ church['order_of_events_image']) }}" class="img-thumbnail" style="width: 120px;">
+                </a>
+
+                <!-- Modal -->
+                <div class="modal fade" id="orderImageModal" tabindex="-1" aria-labelledby="orderImageModalLabel" aria-hidden="true">
+                  <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content bg-light">
+                      <div class="modal-header">
+                        <h5 class="modal-title" id="orderImageModalLabel">Order of Services</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body text-center">
+                        <img src="{{ url_for('static', filename='uploads/' ~ church['order_of_events_image']) }}" class="img-fluid" style="max-height: 80vh;">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              {% else %}
+                <span class="text-muted">No Image</span>
+              {% endif %}
+            </td>         
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endfor %}
+  </section>  
+  
+
+{% endblock %}

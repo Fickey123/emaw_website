@@ -1,0 +1,133 @@
+{% extends "admin_dashboard.html" %}
+{% set active_page = "board" %}
+
+{% block content %}
+<section class="py-4">
+    <h4 class="text-primary">Upload Pastor</h4>
+    <form action="{{ url_for('add_pastor') }}" method="POST" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label>Full Name</label>
+            <input type="text" name="name" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label>Title</label>
+            <select name="title" class="form-control" required>
+                <option value="Bishop">Bishop</option>
+                <option value="Reverend">Reverend</option>
+                <option value="Apostle">Apostle</option>
+                <option value="Pastor">Pastor</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label>Church</label>
+            <input type="text" name="church" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label>Region</label>
+            <input type="text" name="region" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label>Image</label>
+            <input type="file" name="image" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label>Bio</label>
+            <textarea name="bio" class="form-control" rows="4" placeholder="Short bio about the pastor..."></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Upload Pastor</button>
+    </form>          
+</section>
+
+<section class="mt-5">
+    <h4 class="text-secondary">Pastors List</h4>
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover text-center align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>Image</th>
+                    <th>Title</th>
+                    <th>Name</th>
+                    <th>Church</th>
+                    <th>Region</th>
+                    <th>Bio</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pastor in pastors %}
+                <tr data-id="{{ pastor['id'] }}">
+                    <td>{{ loop.index }}</td>
+                    <td>
+                        {% if pastor['image'] %}
+                        <img src="{{ url_for('static', filename='uploads/' ~ pastor['image']) }}" width="80" class="img-thumbnail">
+                        {% else %}
+                        <span class="text-muted">No image</span>
+                        {% endif %}
+                    </td>
+                    <td contenteditable="false" class="title-cell">{{ pastor['title'] }}</td>
+                    <td contenteditable="false" class="name-cell">{{ pastor['name'] }}</td>
+                    <td contenteditable="false" class="church-cell">{{ pastor['church'] }}</td>
+                    <td contenteditable="false" class="region-cell">{{ pastor['region'] }}</td>
+                    <td contenteditable="false" class="bio-cell">{{ pastor['bio'] }}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary edit-btn">Edit</button>
+                        <button class="btn btn-sm btn-success save-btn d-none">Save</button>
+                        <form action="/admin/pastors/delete/{{ pastor['id'] }}" method="POST" class="d-inline">
+                            <button class="btn btn-sm btn-danger" onclick="return confirm('Delete this pastor?')">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<script>
+document.querySelectorAll('.edit-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+        const row = btn.closest('tr');
+
+        const titleCell = row.querySelector('.title-cell');
+        const currentTitle = titleCell.innerText.trim();
+        titleCell.innerHTML = `
+            <select class="form-select form-select-sm">
+                <option value="Bishop" ${currentTitle === 'Bishop' ? 'selected' : ''}>Bishop</option>
+                <option value="Reverend" ${currentTitle === 'Reverend' ? 'selected' : ''}>Reverend</option>
+                <option value="Apostle" ${currentTitle === 'Apostle' ? 'selected' : ''}>Apostle</option>
+                <option value="Pastor" ${currentTitle === 'Pastor' ? 'selected' : ''}>Pastor</option>
+            </select>
+        `;
+
+        row.querySelector('.name-cell').setAttribute('contenteditable', 'true');
+        row.querySelector('.church-cell').setAttribute('contenteditable', 'true');
+        row.querySelector('.region-cell').setAttribute('contenteditable', 'true');
+        row.querySelector('.bio-cell').setAttribute('contenteditable', 'true');
+
+        row.querySelector('.save-btn').classList.remove('d-none');
+        btn.classList.add('d-none');
+    });
+});
+
+document.querySelectorAll('.save-btn').forEach((saveBtn) => {
+    saveBtn.addEventListener('click', () => {
+        const row = saveBtn.closest('tr');
+        const id = row.dataset.id;
+
+        const title = row.querySelector('.title-cell select').value;
+        const name = row.querySelector('.name-cell').innerText.trim();
+        const church = row.querySelector('.church-cell').innerText.trim();
+        const region = row.querySelector('.region-cell').innerText.trim();
+        const bio = row.querySelector('.bio-cell').innerText.trim();
+
+        fetch(`/admin/pastors/edit/${id}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, name, church, region, bio })
+        }).then(() => location.reload());
+    });
+});
+</script>
+{% endblock %}

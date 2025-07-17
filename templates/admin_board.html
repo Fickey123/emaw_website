@@ -1,0 +1,149 @@
+{% extends "admin_dashboard.html" %}
+{% set active_page = "board" %}
+
+{% block content %}
+    <!-- Upload New Board Member -->
+    <section class="py-4">
+      <h4 class="text-primary">Upload Board Member</h4>
+      <form action="/admin/board_members/add" method="POST" enctype="multipart/form-data" class="mb-4">
+        <div class="row g-3">
+          <div class="col-md-4 col-12">
+            <input type="text" name="name" class="form-control" placeholder="Member Name" required>
+          </div>
+          <div class="col-md-4 col-12">
+            <select name="title" class="form-control" required>
+              <option value="">-- Select Title --</option>
+              <option value="bishop">Bishop</option>
+              <option value="reverend">Reverend</option>
+              <option value="apostle">Apostle</option>
+              <option value="pastor">Pastor</option>
+            </select>
+          </div>
+          <div class="col-md-4 col-12">
+            <input type="text" name="position" class="form-control" placeholder="Position (e.g. Chairman)" required>
+          </div>
+          <div class="col-md-4 col-12">
+            <input type="text" name="region" class="form-control" placeholder="Region" required>
+          </div>
+          <div class="col-md-4 col-12">
+            <input type="text" name="church" class="form-control" placeholder="Church" required>
+          </div>
+          <div class="col-md-4 col-12">
+            <input type="file" name="image" accept="image/*" class="form-control" required>
+          </div>
+          <div class="col-12 mt-2">
+            <button class="btn btn-success">Upload</button>
+          </div>
+        </div>
+      </form>
+
+      <h4 class="text-secondary">Board Members List</h4>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle text-center w-100">
+          <thead class="table-primary">
+            <tr>
+              <th>#</th>
+              <th>Image</th>
+              <th>Title</th>
+              <th>Name</th>
+              <th>Position</th>
+              <th>Region</th>
+              <th>Church</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for member in board_members %}
+            <tr>
+              <td>{{ loop.index }}</td>
+              <td>
+                <img src="{{ url_for('static', filename='uploads/' ~ member.image) }}"
+                    alt="Board Member"
+                    class="img-thumbnail"
+                    style="max-width: 80px;">
+              </td>
+              <td contenteditable="false" data-id="{{ member.id }}" data-field="name" class="editable-cell">
+                {{ member.title }}
+              </td>
+              <td contenteditable="false" data-id="{{ member.id }}" data-field="title" class="editable-cell">
+                {{ member.name }}
+              </td>
+              <td contenteditable="false" data-id="{{ member.id }}" data-field="position" class="editable-cell">
+                {{ member.position }}
+              </td>
+              <td contenteditable="false" data-id="{{ member.id }}" data-field="region" class="editable-cell">
+                {{ member.region }}
+              </td>
+              <td contenteditable="false" data-id="{{ member.id }}" data-field="church" class="editable-cell">
+                {{ member.church }}
+              </td>
+              <td>
+                <div class="d-flex justify-content-center gap-2 flex-wrap">
+                  <button class="btn btn-sm btn-warning edit-btn" data-id="{{ member.id }}">Edit</button>
+                  <button class="btn btn-sm btn-success save-btn d-none" data-id="{{ member.id }}">Save</button>
+
+                  <form action="/admin/board_members/delete/{{ member.id }}" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".edit-btn").forEach(editBtn => {
+          editBtn.addEventListener("click", function () {
+            const row = this.closest("tr");
+            const editableFields = ["name", "title", "position", "region", "church"];
+            const saveBtn = row.querySelector('.save-btn');
+
+            editableFields.forEach(field => {
+              const cell = row.querySelector(`[data-field="${field}"]`);
+              if (cell) cell.contentEditable = "true";
+            });
+
+            row.querySelector('[data-field="name"]').focus();
+
+            this.classList.add("d-none");
+            saveBtn.classList.remove("d-none");
+          });
+        });
+
+        document.querySelectorAll(".save-btn").forEach(saveBtn => {
+          saveBtn.addEventListener("click", function () {
+            const row = this.closest("tr");
+            const editBtn = row.querySelector('.edit-btn');
+            const id = this.dataset.id;
+
+            const updatedData = {};
+            ["name", "title", "position", "region", "church"].forEach(field => {
+              const cell = row.querySelector(`[data-field="${field}"]`);
+              if (cell) {
+                updatedData[field] = cell.innerText.trim();
+                cell.contentEditable = "false";
+              }
+            });
+
+            fetch(`/admin/board_members/edit/${id}`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(updatedData)
+            })
+            .then(res => res.json())
+            .then(data => {
+              alert(data.message);
+              this.classList.add("d-none");
+              editBtn.classList.remove("d-none");
+            });
+          });
+        });
+      });
+    </script>
+    
+                
+{% endblock %}
