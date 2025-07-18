@@ -27,6 +27,8 @@ app.config['MYSQL_PASSWORD'] = '8jBemu8X%TRDZB$'
 app.config['MYSQL_DB'] = 'freedb_emaw_db'
 app.config['MYSQL_PORT'] = 3306
 
+# Initialize MySQL
+mysql = MySQL(app)
 
 
 admin = Blueprint('admin', __name__)
