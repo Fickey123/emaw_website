@@ -926,7 +926,7 @@ def stk_push():
         "PartyA": phone,
         "PartyB": shortcode,
         "PhoneNumber": phone,
-        "CallBackURL": "https://b4c98be994f3.ngrok-free.app/mpesa/callback",  # Update this to your live domain!
+        "CallBackURL": "https://emaw-church.onrender.com//mpesa/callback",  # Update this to your live domain!
         "AccountReference": "Donation",
         "TransactionDesc": "Church Donation"
     }
