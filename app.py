@@ -58,7 +58,7 @@ mail = Mail(app)
 atexit.register(lambda: scheduler.shutdown())
 
 # Secret Admin Login Route
-@app.route('/super-access-9912', methods=['GET', 'POST'])
+@app.route('/super/admin', methods=['GET', 'POST'])
 def admin_login():
     if request.method == 'POST':
         username = request.form['username']

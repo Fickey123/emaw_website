@@ -63,20 +63,24 @@
   <!-- Executive Board Members Section -->
   <section id="board-members" class="container my-5">
     <h3>Board Members</h3>
-    <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-3">
+    <div class="row g-3">
       {% for member in board_members %}
-      <div class="col-md-6 col-lg-3">
-        <div class="card h-100 shadow-sm">
-          <img src="{{ url_for('static', filename='uploads/' ~ member.image) }}" class="card-img-top" alt="Board Member" style="height: 320px;">
+      <div class="col-6 col-sm-4 col-md-3 col-lg-2 d-flex">
+        <div class="card shadow-sm w-100">
+          <img src="{{ url_for('static', filename='uploads/' ~ member.image) }}" 
+              class="card-img-top img-fluid" 
+              alt="Board Member" 
+              style="object-fit: cover; height: 200px;">
+
           <div class="card-body">
-            <h5 class="card-title">
+            <h6 class="card-title mb-2">
               {% if member.title.lower() == "reverend" %}
                 Rev {{ member.name }}
               {% else %}
                 {{ member.title | capitalize }} {{ member.name }}
               {% endif %}
-            </h5>
-            <ul class="list-unstyled card-text mb-0">
+            </h6>
+            <ul class="list-unstyled card-text mb-0 small">
               <li><strong>Position:</strong> {{ member.position }}</li>
               <li><strong>Region:</strong> {{ member.region }}</li>
               <li><strong>Church:</strong> {{ member.church }}</li>
@@ -94,24 +98,30 @@
   <section id="pastors" class="py-5 bg-light">
     <div class="container">
       <h3>EMAW Church Pastors</h3>
-      <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-3">
+      <div class="row g-3">
         {% for pastor in pastors %}
-        <div class="col-md-6 col-lg-3">
-          <div class="card h-100 shadow-sm">
-            <img src="{{ url_for('static', filename='uploads/' ~ pastor.image) }}" class="card-img-top" alt="{{ pastor.name }}" style="height: 350px;">
+        <div class="col-6 col-sm-4 col-md-3 col-lg-2 d-flex">
+          <div class="card shadow-sm w-100">
+            <img src="{{ url_for('static', filename='uploads/' ~ pastor.image) }}" 
+                class="card-img-top img-fluid" 
+                alt="{{ pastor.name }}" 
+                style="object-fit: cover; height: 200px;">
+
             <div class="card-body text-center">
-              <h5 class="card-title">
+              <h6 class="card-title mb-1">
                 {% if pastor.title.lower() == "reverend" %}
                   Rev {{ pastor.name }}
                 {% else %}
                   {{ pastor.title }} {{ pastor.name }}
                 {% endif %}
-              </h5>
+              </h6>
+
               {% if pastor.church %}
-                <p class="card-text mb-1"><strong>Church:</strong> {{ pastor.church }}</p>
+                <p class="card-text small mb-1"><strong>Church:</strong> {{ pastor.church }}</p>
               {% endif %}
+
               {% if pastor.bio %}
-                <p class="card-text">{{ pastor.bio }}</p>
+                <p class="card-text small">{{ pastor.bio }}</p>
               {% endif %}
             </div>
           </div>
