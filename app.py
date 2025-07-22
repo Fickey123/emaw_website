@@ -8,7 +8,7 @@ import yt_dlp
 import json
 import atexit
 import time
-from flask import Flask, Blueprint, render_template, request, redirect, url_for, flash, session, jsonify
+from flask import Flask, Blueprint, render_template, request, redirect, url_for, flash, session, jsonify, send_from_directory
 from flask_mysqldb import MySQL
 from werkzeug.utils import secure_filename
 from email.message import EmailMessage
@@ -576,7 +576,11 @@ def home():
     upcoming_events = cur.fetchall()
     return render_template('home.html', events_preview=upcoming_events)
 
+@app.route('/sitemap.xml')
+def sitemap():
+    return send_from_directory('.', 'sitemap.xml')
 
+    
 # About Us
 @app.route('/about')
 def about():
