@@ -8,6 +8,8 @@ import yt_dlp
 import json
 import atexit
 import time
+import cloudinary
+import cloudinary.uploader
 from flask import Flask, Blueprint, render_template, request, redirect, url_for, flash, session, jsonify, send_from_directory
 from flask_mysqldb import MySQL
 from werkzeug.utils import secure_filename
@@ -16,6 +18,7 @@ from email.mime.text import MIMEText
 from flask_mail import Mail, Message
 from datetime import datetime
 from apscheduler.schedulers.background import BackgroundScheduler
+from cloudinary.uploader import upload as cloudinary_upload
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'  # Required for flashing messages (e.g., in contact form)
@@ -32,7 +35,6 @@ mysql = MySQL(app)
 
 
 admin = Blueprint('admin', __name__)
-UPLOAD_FOLDER = 'static/uploads'
 
 # Hardcoded credentials (can be replaced with DB later)
 ADMIN_USERNAME = 'admin'
@@ -43,6 +45,14 @@ consumer_key = "MGWYGhq9UpMsHG97j3TkVNzTBP4lT1qC8uFttn8EcfhynQzT"
 consumer_secret = "L1UOpTZJzzFVAnnnHdOgdrIAuzhktXfup6rOrYLrrwdoiY7JbUiq9fGNNHI6fLvz"
 shortcode = "5620516"  # Replace with your Paybill or shortcode
 passkey = "878f5ecd21d68a0760993346761398f553a8b0e9e0a5a06d3603b9804966f888"
+
+# Cloudinary configuration
+cloudinary.config(
+  cloud_name = 'dtnchviep',
+  api_key = '395915344537296',
+  api_secret = 'zNsxZ9RpCHd7K6tkc0R8t-qXiWw',
+  secure = True
+)
 
 # Flask Mail config
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
@@ -105,19 +115,19 @@ def add_board_member():
     region = request.form['region']
     church = request.form['church']
     image = request.files['image']
-    
+
     if image:
-        filename = secure_filename(image.filename)
-        image_path = os.path.join('static/uploads', filename)
-        image.save(image_path)
+        # Upload to Cloudinary
+        result = cloudinary.uploader.upload(image)
+        image_url = result['secure_url']
 
         cursor = mysql.connection.cursor()
         cursor.execute("""
             INSERT INTO board_members (name, title, position, region, church, image)
             VALUES (%s, %s, %s, %s, %s, %s)
-        """, (name, title, position, region, church, filename))
+        """, (name, title, position, region, church, image_url))
         mysql.connection.commit()
-    
+
     return redirect("/admin/board_members")
 
 
@@ -171,15 +181,14 @@ def add_pastor():
     image_file = request.files['image']
 
     if image_file:
-        filename = secure_filename(image_file.filename)
-        image_path = os.path.join(UPLOAD_FOLDER, filename)
-        image_file.save(image_path)
+        result = cloudinary.uploader.upload(image_file)
+        image_url = result['secure_url']
 
         cursor = mysql.connection.cursor()
         cursor.execute("""
             INSERT INTO pastors (name, title, church, region, bio, image) 
             VALUES (%s, %s, %s, %s, %s, %s)
-        """, (name, title, church, region, bio, filename))
+        """, (name, title, church, region, bio, image_url))
         mysql.connection.commit()
 
     return redirect(url_for('admin_pastors'))
@@ -221,32 +230,28 @@ def admin_churches():
         region = request.form["region"]
         lead_title = request.form["lead_title"]
         lead_name = request.form["lead_name"]
-        other_pastors = request.form.getlist("other_pastors[]")  # List of strings
-        other_titles = request.form.getlist("other_titles[]")    # Corresponding titles
+        other_pastors = request.form.getlist("other_pastors[]")
+        other_titles = request.form.getlist("other_titles[]")
         image_file = request.files.get("order_of_events_image")
 
-        other_pastor_entries = [
+        other_entries = [
             f"{t.strip()} {n.strip()}" for t, n in zip(other_titles, other_pastors) if n.strip()
         ]
-        other_pastors_str = ", ".join(other_pastor_entries)
-
+        other_pastors_str = ", ".join(other_entries)
         lead_full = f"{lead_title.strip()} {lead_name.strip()}"
 
         image_filename = None
         if image_file and image_file.filename:
-            image_filename = secure_filename(image_file.filename)
-            image_path = os.path.join("static/uploads", image_filename)
-            image_file.save(image_path)
+            upload_result = cloudinary.uploader.upload(image_file)
+            image_filename = upload_result['secure_url']
 
         cursor.execute("""
             INSERT INTO churches (name, region, lead_pastor_name, other_pastors, order_of_events_image)
             VALUES (%s, %s, %s, %s, %s)
         """, (name, region, lead_full, other_pastors_str, image_filename))
         mysql.connection.commit()
-
         return redirect(url_for('admin_churches'))
 
-    # GET logic - fetch and display churches
     cursor.execute("SELECT * FROM churches ORDER BY region ASC, name ASC")
     churches = cursor.fetchall()
     return render_template("admin_churches.html", churches=churches, active_page='churches')
@@ -283,13 +288,13 @@ def edit_church(id):
     region = request.form.get("region")
     lead = request.form.get("lead_pastor_name")
     others = request.form.get("other_pastors")
-    
-    # Handle file upload
+
+    # Handle Cloudinary file upload
     file = request.files.get("order_of_events_image")
     filename = None
     if file and file.filename:
-        filename = secure_filename(file.filename)
-        file.save(os.path.join("static/uploads", filename))
+        upload_result = cloudinary_upload(file)
+        filename = upload_result['secure_url']  # Get the secure URL
 
     cursor = mysql.connection.cursor()
 
@@ -519,12 +524,11 @@ def upload_gallery():
         description = request.form['description']
         category = request.form['category']
 
-        # Updated category check
         allowed_categories = ['pastors', 'congregation', 'events', 'churches']
 
         if file and category in allowed_categories:
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(UPLOAD_FOLDER, filename))
+            upload_result = cloudinary_upload(file)
+            filename = upload_result['secure_url']  # Save URL instead of local path
 
             cursor = mysql.connection.cursor()
             cursor.execute(
