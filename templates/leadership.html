@@ -95,41 +95,41 @@
   </section>
 
   <!-- Pastors Section -->
-  <section id="pastors" class="py-5 bg-light">
-    <div class="container">
-      <h3>EMAW Church Pastors</h3>
-      <div class="row g-3">
-        {% for pastor in pastors %}
-        <div class="col-6 col-sm-4 col-md-3 col-lg-2 d-flex">
-          <div class="card shadow-sm w-100">
-            <img src="{{ member.image }}" alt="Image">
-                class="card-img-top img-fluid" 
-                alt="{{ pastor.name }}" 
-                style="object-fit: cover; height: 200px;">
+<section id="pastors" class="py-5 bg-light">
+  <div class="container">
+    <h3>EMAW Church Pastors</h3>
+    <div class="row g-3">
+      {% for pastor in pastors %}
+      <div class="col-6 col-sm-4 col-md-3 col-lg-2 d-flex">
+        <div class="card shadow-sm w-100">
+          <img src="{{ pastor.image }}" 
+              class="card-img-top img-fluid" 
+              alt="{{ pastor.name }}" 
+              style="object-fit: cover; height: 200px;">
 
-            <div class="card-body text-center">
-              <h6 class="card-title mb-1">
-                {% if pastor.title.lower() == "reverend" %}
-                  Rev {{ pastor.name }}
-                {% else %}
-                  {{ pastor.title }} {{ pastor.name }}
-                {% endif %}
-              </h6>
-
-              {% if pastor.church %}
-                <p class="card-text small mb-1"><strong>Church:</strong> {{ pastor.church }}</p>
+          <div class="card-body text-center">
+            <h6 class="card-title mb-1">
+              {% if pastor.title.lower() == "reverend" %}
+                Rev {{ pastor.name }}
+              {% else %}
+                {{ pastor.title }} {{ pastor.name }}
               {% endif %}
+            </h6>
 
-              {% if pastor.bio %}
-                <p class="card-text small">{{ pastor.bio }}</p>
-              {% endif %}
-            </div>
+            {% if pastor.church %}
+              <p class="card-text small mb-1"><strong>Church:</strong> {{ pastor.church }}</p>
+            {% endif %}
+
+            {% if pastor.bio %}
+              <p class="card-text small">{{ pastor.bio }}</p>
+            {% endif %}
           </div>
         </div>
-        {% endfor %}
       </div>
+      {% endfor %}
     </div>
-  </section>
+  </div>
+</section>
 
   <!-- Churches Section -->
   <section id="churches" class="mt-5">
