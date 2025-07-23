@@ -61,7 +61,7 @@
                     <td>{{ loop.index }}</td>
                     <td>
                         {% if pastor['image'] %}
-                        <img src="{{ url_for('static', filename='uploads/' ~ pastor['image']) }}" width="80" class="img-thumbnail">
+                        <img src="{{ pastor['image'] }}" width="80" class="img-thumbnail" style="object-fit: cover; height: 80px;">
                         {% else %}
                         <span class="text-muted">No image</span>
                         {% endif %}

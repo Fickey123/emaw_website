@@ -55,9 +55,9 @@
 
     <h4 class="text-secondary mt-5">Churches List</h4>
     <div class="table-responsive">
-    <table class="table table-bordered table-hover text-center align-middle">
+      <table class="table table-bordered table-hover text-center align-middle">
         <thead class="table-dark">
-        <tr>
+          <tr>
             <th>#</th>
             <th>Church Name</th>
             <th>Region</th>
@@ -65,35 +65,38 @@
             <th>Other Pastors</th>
             <th>Order of Events</th>
             <th>Actions</th>
-        </tr>
+          </tr>
         </thead>
         <tbody>
-        {% for church in churches %}
-        <tr data-id="{{ church['id'] }}">
+          {% for church in churches %}
+          <tr data-id="{{ church['id'] }}">
             <td>{{ loop.index }}</td>
             <td class="church-name-cell" contenteditable="false">{{ church['name'] }}</td>
             <td class="region-cell" contenteditable="false">{{ church['region'] }}</td>
             <td class="lead-pastor-cell" contenteditable="false">{{ church['lead_pastor_name'] }}</td>
             <td class="other-pastors-cell" contenteditable="false">
-                <div style="white-space: pre-wrap;">
-                    {{ (church['other_pastors'] or 'None') | replace(', ', '<br>') | safe }}
-                </div>
-            </td>            
-            <td>
-                <img src="{{ url_for('static', filename='uploads/' ~ church['order_of_events_image']) }}" width="80" class="events-preview">
-                <input type="file" class="form-control form-control-sm mt-1 events-file" style="display:none;">
-            </td>              
-            <td>
-            <button class="btn btn-sm btn-primary edit-btn">Edit</button>
-            <button class="btn btn-sm btn-success save-btn d-none">Save</button>
-            <form action="/admin/churches/delete/{{ church['id'] }}" method="POST" class="d-inline">
-                <button class="btn btn-sm btn-danger" onclick="return confirm('Delete this church?')">Delete</button>
-            </form>
+              <div style="white-space: pre-wrap;">
+                {{ (church['other_pastors'] or 'None') | replace(', ', '<br>') | safe }}
+              </div>
             </td>
-        </tr>
-        {% endfor %}
+            <td>
+              <img src="{{ church['order_of_events_image'] }}" 
+                  width="80" 
+                  class="events-preview" 
+                  style="object-fit: cover; height: 80px;">
+              <input type="file" class="form-control form-control-sm mt-1 events-file" style="display:none;">
+            </td>
+            <td>
+              <button class="btn btn-sm btn-primary edit-btn">Edit</button>
+              <button class="btn btn-sm btn-success save-btn d-none">Save</button>
+              <form action="/admin/churches/delete/{{ church['id'] }}" method="POST" class="d-inline">
+                <button class="btn btn-sm btn-danger" onclick="return confirm('Delete this church?')">Delete</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
         </tbody>
-    </table>
+      </table>
     </div>
 
     <script>

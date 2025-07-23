@@ -57,15 +57,15 @@
             <tr>
               <td>{{ loop.index }}</td>
               <td>
-                <img src="{{ url_for('static', filename='uploads/' ~ member.image) }}"
+                <img src="{{ member.image }}" 
                     alt="Board Member"
                     class="img-thumbnail"
-                    style="max-width: 80px;">
-              </td>
-              <td contenteditable="false" data-id="{{ member.id }}" data-field="name" class="editable-cell">
-                {{ member.title }}
+                    style="max-width: 80px; object-fit: cover; height: 80px;">
               </td>
               <td contenteditable="false" data-id="{{ member.id }}" data-field="title" class="editable-cell">
+                {{ member.title }}
+              </td>
+              <td contenteditable="false" data-id="{{ member.id }}" data-field="name" class="editable-cell">
                 {{ member.name }}
               </td>
               <td contenteditable="false" data-id="{{ member.id }}" data-field="position" class="editable-cell">

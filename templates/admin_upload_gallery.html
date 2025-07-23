@@ -45,7 +45,8 @@
                 {% if image.category == cat %}
                 <div class="col-md-3 mb-4">
                     <div class="card h-100">
-                        <img src="{{ url_for('static', filename='uploads/' + image.filename) }}" class="card-img-top" alt="{{ image.description }}">
+                        <img src="{{ image.filename }}" class="card-img-top" alt="{{ image.description }}"
+                            style="object-fit: cover; height: 200px;">
                         <div class="card-body">
                             <p class="card-text">{{ image.description }}</p>
                             <form method="POST" action="{{ url_for('delete_image', image_id=image.id) }}">

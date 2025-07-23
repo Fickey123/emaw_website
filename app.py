@@ -552,19 +552,26 @@ def upload_gallery():
 def delete_image(image_id):
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 
-    # Fetch file path
-    cursor.execute("SELECT filename FROM gallery WHERE id = %s", (image_id,))
+    # Fetch the image URL or public_id from DB
+    cursor.execute("SELECT image FROM gallery WHERE id = %s", (image_id,))
     result = cursor.fetchone()
 
     if result:
-        filename = result['filename']
-        file_path = os.path.join(UPLOAD_FOLDER, filename)
+        cloudinary_url = result['image']
 
-        # Delete from disk
-        if os.path.exists(file_path):
-            os.remove(file_path)
+        # Extract the public_id from the Cloudinary URL
+        try:
+            # Example Cloudinary URL: https://res.cloudinary.com/your-cloud-name/image/upload/v12345678/folder/image.jpg
+            public_id = cloudinary_url.split("/")[-1].split(".")[0]
+            # Optional: prepend folder name if used (e.g., gallery/image)
+            public_id = f"gallery/{public_id}"
 
-        # Delete from DB
+            # Delete from Cloudinary
+            cloudinary.uploader.destroy(public_id)
+        except Exception as e:
+            print(f"Error deleting from Cloudinary: {e}")
+
+        # Delete from database
         cursor.execute("DELETE FROM gallery WHERE id = %s", (image_id,))
         mysql.connection.commit()
 
