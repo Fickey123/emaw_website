@@ -48,7 +48,7 @@
       {% for image in pastors %}
       <div class="col-md-3 mb-4">
         <div class="card">
-          <img src="{{ image.image }}" class="card-img-top" alt="{{ image.description }}">
+          <img src="{{ image.filename }}" class="card-img-top" alt="{{ image.description }}">
           <div class="card-body">
             <p class="card-text">{{ image.description }}</p>
           </div>
@@ -63,7 +63,7 @@
       {% for image in congregation %}
       <div class="col-md-3 mb-4">
         <div class="card">
-          <img src="{{ image.image }}" class="card-img-top" alt="{{ image.description }}">
+          <img src="{{ image.filename }}" class="card-img-top" alt="{{ image.description }}">
           <div class="card-body">
             <p class="card-text">{{ image.description }}</p>
           </div>
@@ -78,7 +78,7 @@
       {% for image in events %}
       <div class="col-md-3 mb-4">
         <div class="card">
-          <img src="{{ image.image }}" class="card-img-top" alt="{{ image.description }}">
+          <img src="{{ image.filename }}" class="card-img-top" alt="{{ image.description }}">
           <div class="card-body">
             <p class="card-text">{{ image.description }}</p>
           </div>
