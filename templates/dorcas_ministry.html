@@ -22,4 +22,51 @@
     For more information, you can reach out to us at 
     <a href="mailto:emawkenya700@gmail.com" class="text-decoration-underline text-primary">emawkenya700@gmail.com</a>.
   </p>
+
+  <!-- Responsive Image Gallery with Descriptions -->
+  <h4 class="mt-5 mb-3">Gallery</h4>
+  <div class="row g-4">
+    {% set gallery_images = [
+      {'filename': 'rescue1.jpg', 'description': 'Bishop Muli on Peace Appeal Rescue mission'},
+      {'filename': 'rescue2.jpg', 'description': 'Sharing food stuffs to deserving residents of Kibera'},
+      {'filename': 'rescue3.jpg', 'description': 'Rescue act needed during floods'},
+      {'filename': 'rescue4.jpg', 'description': 'During Kibera floods, houses were submerged and many lives lost but we came in to offer humanitarian assistance'},
+      {'filename': 'rescue5.jpg', 'description': 'Fire outbreak at Kibera Nairobi'}
+    ] %}
+    {% for img in gallery_images %}
+      <div class="col-6 col-md-4 col-lg-3 text-center">
+        <img src="{{ url_for('static', filename='images/' ~ img.filename) }}" 
+            class="img-fluid rounded gallery-img shadow-sm mb-2" 
+            data-bs-toggle="modal" 
+            data-bs-target="#imageModal" 
+            alt="{{ img.description }}">
+        <p class="small text-muted">{{ img.description }}</p>
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- Modal for Zooming Image -->
+  <div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content bg-transparent border-0">
+        <div class="modal-body p-0">
+          <img src="" id="modalImage" class="img-fluid rounded shadow" alt="Zoomed Image">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JS to Load Clicked Image into Modal -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const modalImage = document.getElementById('modalImage');
+      document.querySelectorAll('.gallery-img').forEach(img => {
+        img.addEventListener('click', () => {
+          modalImage.src = img.src;
+          modalImage.alt = img.alt;
+        });
+      });
+    });
+  </script>
+
 {% endblock %}

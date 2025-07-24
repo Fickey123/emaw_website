@@ -552,19 +552,20 @@ def upload_gallery():
 def delete_image(image_id):
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 
-    # Fetch the image URL or public_id from DB
-    cursor.execute("SELECT image FROM gallery WHERE id = %s", (image_id,))
+    # Use the correct column name 'filename' instead of 'image'
+    cursor.execute("SELECT filename FROM gallery WHERE id = %s", (image_id,))
     result = cursor.fetchone()
 
     if result:
-        cloudinary_url = result['image']
+        cloudinary_url = result['filename']  # Cloudinary image URL
 
-        # Extract the public_id from the Cloudinary URL
         try:
-            # Example Cloudinary URL: https://res.cloudinary.com/your-cloud-name/image/upload/v12345678/folder/image.jpg
-            public_id = cloudinary_url.split("/")[-1].split(".")[0]
-            # Optional: prepend folder name if used (e.g., gallery/image)
-            public_id = f"gallery/{public_id}"
+            # Extract the public_id from the Cloudinary URL
+            # Example: https://res.cloudinary.com/your-cloud-name/image/upload/v12345678/gallery/image.jpg
+            parts = cloudinary_url.split('/')
+            version_index = parts.index('upload') + 1
+            public_id_with_ext = '/'.join(parts[version_index + 1:])  # Get the path after 'upload/v1234/'
+            public_id = public_id_with_ext.rsplit('.', 1)[0]  # Remove the file extension
 
             # Delete from Cloudinary
             cloudinary.uploader.destroy(public_id)
