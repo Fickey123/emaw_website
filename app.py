@@ -931,7 +931,11 @@ def stk_push():
 
     timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
     password = base64.b64encode((shortcode + passkey + timestamp).encode()).decode()
-    access_token = get_access_token()
+
+    try:
+        access_token = get_access_token()
+    except Exception as e:
+        return jsonify({"error": f"Access token error: {str(e)}"}), 500
 
     payload = {
         "BusinessShortCode": shortcode,
@@ -942,7 +946,7 @@ def stk_push():
         "PartyA": phone,
         "PartyB": shortcode,
         "PhoneNumber": phone,
-        "CallBackURL": "https://emawchurch.org//mpesa/callback",  # Update this to your live domain!
+        "CallBackURL": "https://emawchurch.org/mpesa/callback",
         "AccountReference": "Donation",
         "TransactionDesc": "Church Donation"
     }
@@ -952,12 +956,20 @@ def stk_push():
         "Content-Type": "application/json"
     }
 
+    print("STK Push Payload:", payload)
+    print("Headers Sent:", headers)
+
     response = requests.post(
         "https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest",
         json=payload, headers=headers
     )
-    print("DARAJA RESPONSE:", response.status_code, response.text)  # Add this to see the real issue
-    return jsonify(response.json())
+
+    print("DARAJA RESPONSE:", response.status_code, response.text)
+
+    try:
+        return jsonify(response.json())
+    except Exception as e:
+        return jsonify({"error": "Invalid JSON in response", "raw": response.text}), response.status_code
 
 @app.route('/mpesa/callback', methods=['POST'])
 def mpesa_callback():
@@ -978,7 +990,7 @@ def mpesa_callback():
     try:
         msg = Message("New Church Donation Received",
                       sender="emawkenya700@gmail.com",
-                      recipients=["emawkenya700@gmail.com"])
+                      recipients=["musiadaniel21@gmail.com"])
         msg.body = f"A donation of KES {amount} was made by phone number: {phone}."
         mail.send(msg)
     except Exception as e:
@@ -991,9 +1003,15 @@ def get_access_token():
     url = "https://api.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials"
     response = requests.get(url, auth=(consumer_key, consumer_secret))
     
-    print("Access Token Response:", response.status_code, response.text)  # Debug line
-    
-    return response.json()['access_token']
+    print("Access Token Response:", response.status_code, response.text)  # Debug
+
+    if response.status_code != 200:
+        raise Exception("Failed to get access token")
+
+    access_token = response.json().get('access_token')
+    print("Access Token Used:", access_token)  # Confirm it's the one being used
+
+    return access_token
 
 
 def send_thank_you_email(to_email, amount):
