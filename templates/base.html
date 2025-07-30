@@ -31,6 +31,19 @@
           justify-content: flex-end;
         }
       }
+      .navbar-brand {
+        white-space: normal !important; /* Allow wrapping */
+        font-size: 1rem;                /* Reduce font size on small screens */
+        max-width: 70vw;                /* Prevent it from exceeding viewport */
+        line-height: 1.2;
+      }
+
+      @media (max-width: 576px) {
+        .navbar-brand {
+          font-size: 0.85rem;
+          max-width: 60vw;
+        }
+      }
     </style>
   </head>
   <body style="background-color: #f8f9fa;">
@@ -41,7 +54,7 @@
         <!-- Navbar Brand -->
         <div class="navbar-brand fw-bold d-flex align-items-center">
           <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="EMAW Logo" style="height: 30px; margin-right: 8px;">
-          EVANGELICAL MISSIONS ACROSS THE WORLD
+          <span>EVANGELICAL MISSIONS ACROSS THE WORLD</span>
         </div>
 
         <!-- Navbar Buttons -->
