@@ -8,6 +8,8 @@
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #ffffff;
     color: #333;
+    overflow-x: hidden; /* Prevent horizontal scroll */
+    margin: 0;
   }
   
   .navbar {
