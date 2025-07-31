@@ -849,6 +849,10 @@ def dorcas_ministry():
 def family_therapy():
     return render_template('family_therapy.html')
 
+@app.route('/ministries/prison')
+def prison_ministry():
+    return render_template('prison_ministry.html')
+
 @app.route('/submit_prayer_request', methods=['POST'])
 def submit_prayer_request():
     name = request.form.get('name')
