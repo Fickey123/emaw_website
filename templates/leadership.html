@@ -193,7 +193,7 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                       </div>
                       <div class="modal-body text-center">
-                        <img src="{{ url_for('static', filename='uploads/' ~ church['order_of_events_image']) }}" class="img-fluid" style="max-height: 80vh;">
+                        <img src="{{ church['order_of_events_image'] }}" class="img-fluid" style="max-height: 80vh;">
                       </div>
                     </div>
                   </div>
@@ -201,7 +201,7 @@
               {% else %}
                 <span class="text-muted">No Image</span>
               {% endif %}
-            </td>         
+            </td>        
           </tr>
           {% endfor %}
         </tbody>

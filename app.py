@@ -266,19 +266,22 @@ def upload_church():
 
     other_titles = request.form.getlist("other_titles[]")
     other_names = request.form.getlist("other_names[]")
-
     others_combined = ", ".join(f"{t} {n}" for t, n in zip(other_titles, other_names)) if other_titles else None
 
-    image = request.files['order_of_events_image']
-    filename = secure_filename(image.filename)
-    image.save(os.path.join(app.root_path, 'static/uploads', filename))
+    image = request.files.get('order_of_events_image')
+    image_url = None
+
+    if image and image.filename:
+        result = cloudinary.uploader.upload(image)
+        image_url = result['secure_url']  # Use the Cloudinary-hosted image URL
 
     cursor = mysql.connection.cursor()
     cursor.execute("""
         INSERT INTO churches (name, region, lead_pastor_name, other_pastors, order_of_events_image)
         VALUES (%s, %s, %s, %s, %s)
-    """, (name, region, lead_full, others_combined, filename))
+    """, (name, region, lead_full, others_combined, image_url))
     mysql.connection.commit()
+    cursor.close()
 
     return redirect("/admin/churches")
 
