@@ -996,7 +996,7 @@ def mpesa_callback():
     # Send email
     try:
         msg = Message("New Church Donation Received",
-                      sender="emawkenya700@gmail.com",
+                      sender="musiadaniel21@gmail.comm",
                       recipients=["musiadaniel21@gmail.com"])
         msg.body = f"A donation of KES {amount} was made by phone number: {phone}."
         mail.send(msg)
