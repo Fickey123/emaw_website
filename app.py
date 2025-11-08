@@ -40,7 +40,7 @@ admin = Blueprint('admin', __name__)
 ADMIN_USERNAME = 'admin'
 ADMIN_PASSWORD = 'emaw123'  # Change this to something secure
 
-# Daraja credentials (Sandbox)
+# Daraja credentials 
 consumer_key = "MGWYGhq9UpMsHG97j3TkVNzTBP4lT1qC8uFttn8EcfhynQzT"
 consumer_secret = "L1UOpTZJzzFVAnnnHdOgdrIAuzhktXfup6rOrYLrrwdoiY7JbUiq9fGNNHI6fLvz"
 shortcode = "5620516"  # Replace with your Paybill or shortcode
@@ -394,7 +394,6 @@ def admin_events_announcements():
         announcements = []
 
     return render_template("admin_events_announcements.html", events=events, announcements=announcements)
-
 
 
 @app.route("/admin/events", methods=["GET", "POST"])
