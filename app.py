@@ -797,6 +797,10 @@ def outreach_ministry():
 def youth_ministry():
     return render_template('youth_ministry.html')
 
+@app.route('/ministries/women_empowerment')
+def women_empowerment():
+    return render_template('women_empowerment.html')
+
 @app.route('/ministries/media')
 def media_ministry():
     return render_template('media_ministry.html')
