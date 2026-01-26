@@ -26,7 +26,7 @@ app.secret_key = 'your_secret_key_here'  # Required for flashing messages (e.g.,
 # MySQL Config for FreeDB
 app.config['MYSQL_HOST'] = 'sql.freedb.tech'
 app.config['MYSQL_USER'] = 'freedb_fic_user'
-app.config['MYSQL_PASSWORD'] = '8jBemu8X%TRDZB$'
+app.config['MYSQL_PASSWORD'] = 'bT7%MBB9egqgPtm'
 app.config['MYSQL_DB'] = 'freedb_emaw_db'
 app.config['MYSQL_PORT'] = 3306
 
