@@ -27,11 +27,15 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'  # Required for flashing messages (e.g., in contact form)
 
-def get_db_connection():
+def get_db():
     return psycopg2.connect(
-        os.environ.get("DATABASE_URL"),
+        host=os.environ.get("DB_HOST"),
+        dbname=os.environ.get("DB_NAME"),
+        user=os.environ.get("DB_USER"),
+        password=os.environ.get("DB_PASSWORD"),
+        port=os.environ.get("DB_PORT", 5432),
         sslmode="require",
-        cursor_factory=psycopg2.extras.RealDictCursor
+        cursor_factory=RealDictCursor
     )
 
 
