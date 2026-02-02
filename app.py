@@ -29,14 +29,11 @@ app.secret_key = 'your_secret_key_here'  # Required for flashing messages (e.g.,
 
 def get_db():
     return psycopg2.connect(
-        host=os.environ.get("DB_HOST"),
-        dbname=os.environ.get("DB_NAME"),
-        user=os.environ.get("DB_USER"),
-        password=os.environ.get("DB_PASSWORD"),
-        port=os.environ.get("DB_PORT", 5432),
+        os.environ.get("DATABASE_URL"),
         sslmode="require",
-        cursor_factory=RealDictCursor
+        cursor_factory=psycopg2.extras.RealDictCursor
     )
+
 
 
 admin = Blueprint('admin', __name__)
