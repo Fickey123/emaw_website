@@ -1,6 +1,5 @@
 import os
 import requests
-import MySQLdb.cursors
 import smtplib
 import base64
 import re
@@ -10,8 +9,10 @@ import atexit
 import time
 import cloudinary
 import cloudinary.uploader
+import psycopg2
+import psycopg2.extras
+from dotenv import load_dotenv
 from flask import Flask, Blueprint, render_template, request, redirect, url_for, flash, session, jsonify, send_from_directory
-from flask_mysqldb import MySQL
 from werkzeug.utils import secure_filename
 from email.message import EmailMessage
 from email.mime.text import MIMEText
@@ -19,19 +20,19 @@ from flask_mail import Mail, Message
 from datetime import datetime
 from apscheduler.schedulers.background import BackgroundScheduler
 from cloudinary.uploader import upload as cloudinary_upload
+from psycopg2.extras import RealDictCursor
+
+load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'  # Required for flashing messages (e.g., in contact form)
 
-# MySQL Config for FreeDB
-app.config['MYSQL_HOST'] = 'sql.freedb.tech'
-app.config['MYSQL_USER'] = 'freedb_fic_user'
-app.config['MYSQL_PASSWORD'] = 'bT7%MBB9egqgPtm'
-app.config['MYSQL_DB'] = 'freedb_emaw_db'
-app.config['MYSQL_PORT'] = 3306
-
-# Initialize MySQL
-mysql = MySQL(app)
+def get_db_connection():
+    return psycopg2.connect(
+        os.environ.get("DATABASE_URL"),
+        sslmode="require",
+        cursor_factory=psycopg2.extras.RealDictCursor
+    )
 
 
 admin = Blueprint('admin', __name__)
@@ -101,129 +102,166 @@ def logout_admin():
 
 @app.route("/admin/board_members")
 def admin_board_members():
-    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    conn = get_db_connection()
+    cursor = conn.cursor()
     cursor.execute("SELECT * FROM board_members")
     members = cursor.fetchall()
+    cursor.close()
+    conn.close()
     return render_template("admin_board.html", board_members=members, active_page='board_members')
 
 
 @app.route("/admin/board_members/add", methods=["POST"])
 def add_board_member():
-    name = request.form['name']
-    title = request.form['title']
-    position = request.form['position']
-    region = request.form['region']
-    church = request.form['church']
+    conn = get_db()
+    cur = conn.cursor()
+
     image = request.files['image']
+    result = cloudinary.uploader.upload(image)
+    image_url = result['secure_url']
 
-    if image:
-        # Upload to Cloudinary
-        result = cloudinary.uploader.upload(image)
-        image_url = result['secure_url']
+    cur.execute("""
+        INSERT INTO board_members (name, title, position, region, church, image)
+        VALUES (%s, %s, %s, %s, %s, %s)
+    """, (
+        request.form['name'],
+        request.form['title'],
+        request.form['position'],
+        request.form['region'],
+        request.form['church'],
+        image_url
+    ))
 
-        cursor = mysql.connection.cursor()
-        cursor.execute("""
-            INSERT INTO board_members (name, title, position, region, church, image)
-            VALUES (%s, %s, %s, %s, %s, %s)
-        """, (name, title, position, region, church, image_url))
-        mysql.connection.commit()
-
+    conn.commit()
+    cur.close()
+    conn.close()
     return redirect("/admin/board_members")
 
 
 @app.route("/admin/board_members/edit/<int:id>", methods=["POST"])
 def edit_board_member(id):
     data = request.get_json()
-    name = data['name']
-    title = data['title']
-    position = data['position']
-    region = data['region']
-    church = data['church']
+    conn = get_db()
+    cur = conn.cursor()
 
-    cursor = mysql.connection.cursor()
-    cursor.execute("""
+    cur.execute("""
         UPDATE board_members
         SET name=%s, title=%s, position=%s, region=%s, church=%s
         WHERE id=%s
-    """, (name, title, position, region, church, id))
-    mysql.connection.commit()
+    """, (
+        data['name'],
+        data['title'],
+        data['position'],
+        data['region'],
+        data['church'],
+        id
+    ))
 
-    return jsonify({"message": "Board member updated successfully"})
+    conn.commit()
+    cur.close()
+    conn.close()
+    return jsonify({"message": "Updated"})
 
 
 @app.route("/admin/board_members/delete/<int:id>", methods=["POST"])
 def delete_board_member(id):
-    cursor = mysql.connection.cursor()
-    cursor.execute("DELETE FROM board_members WHERE id=%s", (id,))
-    mysql.connection.commit()
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM board_members WHERE id=%s", (id,))
+    conn.commit()
+    cur.close()
+    conn.close()
     return redirect("/admin/board_members")
+
 
 
 # Display pastors admin page
 @app.route('/admin/pastors')
 def admin_pastors():
-    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)  # <- Use DictCursor here
-    cursor.execute("""
-        SELECT * FROM pastors 
-        ORDER BY FIELD(title, 'Bishop', 'Reverend','Apostle', 'Pastor')
+    conn = get_db()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+    cur.execute("""
+        SELECT * FROM pastors
+        ORDER BY CASE title
+            WHEN 'Bishop' THEN 1
+            WHEN 'Reverend' THEN 2
+            WHEN 'Apostle' THEN 3
+            WHEN 'Pastor' THEN 4
+        END
     """)
-    pastors = cursor.fetchall()
-    return render_template('admin_pastors.html', pastors=pastors, active_page='pastors')
+
+    pastors = cur.fetchall()
+    cur.close()
+    conn.close()
+    return render_template('admin_pastors.html', pastors=pastors)
 
 # Upload new pastor
 @app.route('/admin/pastors/add', methods=['POST'])
 def add_pastor():
-    name = request.form['name']
-    title = request.form['title']
-    church = request.form['church']
-    region = request.form['region']
-    bio = request.form['bio']
-    image_file = request.files['image']
+    conn = get_db()
+    cur = conn.cursor()
 
-    if image_file:
-        result = cloudinary.uploader.upload(image_file)
-        image_url = result['secure_url']
+    image_url = cloudinary.uploader.upload(request.files['image'])['secure_url']
 
-        cursor = mysql.connection.cursor()
-        cursor.execute("""
-            INSERT INTO pastors (name, title, church, region, bio, image) 
-            VALUES (%s, %s, %s, %s, %s, %s)
-        """, (name, title, church, region, bio, image_url))
-        mysql.connection.commit()
+    cur.execute("""
+        INSERT INTO pastors (name, title, church, region, bio, image)
+        VALUES (%s, %s, %s, %s, %s, %s)
+    """, (
+        request.form['name'],
+        request.form['title'],
+        request.form['church'],
+        request.form['region'],
+        request.form['bio'],
+        image_url
+    ))
 
+    conn.commit()
+    cur.close()
+    conn.close()
     return redirect(url_for('admin_pastors'))
 
 # Inline edit pastor
 @app.route('/admin/pastors/edit/<int:id>', methods=['POST'])
 def edit_pastor(id):
     data = request.get_json()
-    title = data['title']
-    name = data['name']
-    church = data['church']
-    region = data['region']
-    bio = data['bio']
+    conn = get_db()
+    cur = conn.cursor()
 
-    cursor = mysql.connection.cursor()
-    cursor.execute("""
+    cur.execute("""
         UPDATE pastors
-        SET title = %s, name = %s, church = %s, region = %s, bio = %s
-        WHERE id = %s
-    """, (title, name, church, region, bio, id))
-    mysql.connection.commit()
-    return jsonify({'status': 'success'})
+        SET title=%s, name=%s, church=%s, region=%s, bio=%s
+        WHERE id=%s
+    """, (
+        data['title'],
+        data['name'],
+        data['church'],
+        data['region'],
+        data['bio'],
+        id
+    ))
+
+    conn.commit()
+    cur.close()
+    conn.close()
+    return jsonify({"status": "success"})
 
 # Delete pastor
 @app.route('/admin/pastors/delete/<int:id>', methods=['POST'])
 def delete_pastor(id):
-    cursor = mysql.connection.cursor()
-    cursor.execute("DELETE FROM pastors WHERE id = %s", (id,))
-    mysql.connection.commit()
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM pastors WHERE id = %s", (id,))
+    conn.commit()
+    cur.close()
+    conn.close()
     return redirect(url_for('admin_pastors'))
 
 
 @app.route("/admin/churches", methods=["GET", "POST"])
 def admin_churches():
-    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    conn = get_db()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
     if request.method == "POST":
         name = request.form["name"]
@@ -235,29 +273,72 @@ def admin_churches():
         image_file = request.files.get("order_of_events_image")
 
         other_entries = [
-            f"{t.strip()} {n.strip()}" for t, n in zip(other_titles, other_pastors) if n.strip()
+            f"{t.strip()} {n.strip()}"
+            for t, n in zip(other_titles, other_pastors) if n.strip()
         ]
         other_pastors_str = ", ".join(other_entries)
         lead_full = f"{lead_title.strip()} {lead_name.strip()}"
 
-        image_filename = None
+        image_url = None
         if image_file and image_file.filename:
-            upload_result = cloudinary.uploader.upload(image_file)
-            image_filename = upload_result['secure_url']
+            upload = cloudinary.uploader.upload(image_file)
+            image_url = upload["secure_url"]
 
-        cursor.execute("""
+        cur.execute("""
             INSERT INTO churches (name, region, lead_pastor_name, other_pastors, order_of_events_image)
             VALUES (%s, %s, %s, %s, %s)
-        """, (name, region, lead_full, other_pastors_str, image_filename))
-        mysql.connection.commit()
-        return redirect(url_for('admin_churches'))
+        """, (name, region, lead_full, other_pastors_str, image_url))
 
-    cursor.execute("SELECT * FROM churches ORDER BY region ASC, name ASC")
-    churches = cursor.fetchall()
-    return render_template("admin_churches.html", churches=churches, active_page='churches')
+        conn.commit()
+        cur.close()
+        conn.close()
+        return redirect(url_for("admin_churches"))
+
+    cur.execute("SELECT * FROM churches ORDER BY region ASC, name ASC")
+    churches = cur.fetchall()
+    cur.close()
+    conn.close()
+    return render_template("admin_churches.html", churches=churches, active_page="churches")
+
+@app.route("/admin/churches/edit/<int:id>", methods=["POST"])
+def edit_church(id):
+    conn = get_db()
+    cur = conn.cursor()
+
+    name = request.form.get("name")
+    region = request.form.get("region")
+    lead = request.form.get("lead_pastor_name")
+    others = request.form.get("other_pastors")
+
+    file = request.files.get("order_of_events_image")
+    image_url = None
+    if file and file.filename:
+        image_url = cloudinary_upload(file)["secure_url"]
+
+    if image_url:
+        cur.execute("""
+            UPDATE churches
+            SET name=%s, region=%s, lead_pastor_name=%s, other_pastors=%s, order_of_events_image=%s
+            WHERE id=%s
+        """, (name, region, lead, others, image_url, id))
+    else:
+        cur.execute("""
+            UPDATE churches
+            SET name=%s, region=%s, lead_pastor_name=%s, other_pastors=%s
+            WHERE id=%s
+        """, (name, region, lead, others, id))
+
+    conn.commit()
+    cur.close()
+    conn.close()
+    return jsonify(status="success")
+
 
 @app.route("/admin/churches/upload", methods=["POST"])
 def upload_church():
+    conn = get_db()
+    cur = conn.cursor()
+
     name = request.form['name']
     region = request.form['region']
     lead_title = request.form['lead_title']
@@ -266,139 +347,76 @@ def upload_church():
 
     other_titles = request.form.getlist("other_titles[]")
     other_names = request.form.getlist("other_names[]")
-    others_combined = ", ".join(f"{t} {n}" for t, n in zip(other_titles, other_names)) if other_titles else None
+    others = ", ".join(f"{t} {n}" for t, n in zip(other_titles, other_names))
 
     image = request.files.get('order_of_events_image')
     image_url = None
-
     if image and image.filename:
-        result = cloudinary.uploader.upload(image)
-        image_url = result['secure_url']  # Use the Cloudinary-hosted image URL
+        image_url = cloudinary.uploader.upload(image)["secure_url"]
 
-    cursor = mysql.connection.cursor()
-    cursor.execute("""
+    cur.execute("""
         INSERT INTO churches (name, region, lead_pastor_name, other_pastors, order_of_events_image)
         VALUES (%s, %s, %s, %s, %s)
-    """, (name, region, lead_full, others_combined, image_url))
-    mysql.connection.commit()
-    cursor.close()
+    """, (name, region, lead_full, others, image_url))
 
+    conn.commit()
+    cur.close()
+    conn.close()
     return redirect("/admin/churches")
-
-@app.route("/admin/churches/edit/<int:id>", methods=["POST"])
-def edit_church(id):
-    name = request.form.get("name")
-    region = request.form.get("region")
-    lead = request.form.get("lead_pastor_name")
-    others = request.form.get("other_pastors")
-
-    # Handle Cloudinary file upload
-    file = request.files.get("order_of_events_image")
-    filename = None
-    if file and file.filename:
-        upload_result = cloudinary_upload(file)
-        filename = upload_result['secure_url']  # Get the secure URL
-
-    cursor = mysql.connection.cursor()
-
-    if filename:
-        cursor.execute("""
-            UPDATE churches
-            SET name = %s, region = %s, lead_pastor_name = %s, other_pastors = %s, order_of_events_image = %s
-            WHERE id = %s
-        """, (name, region, lead, others, filename, id))
-    else:
-        cursor.execute("""
-            UPDATE churches
-            SET name = %s, region = %s, lead_pastor_name = %s, other_pastors = %s
-            WHERE id = %s
-        """, (name, region, lead, others, id))
-
-    mysql.connection.commit()
-    return jsonify({"status": "success"})
 
 @app.route("/admin/churches/delete/<int:id>", methods=["POST"])
 def delete_church(id):
-    cursor = mysql.connection.cursor()
-    cursor.execute("DELETE FROM churches WHERE id = %s", (id,))
-    mysql.connection.commit()
-    return redirect(url_for('admin_churches'))
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM churches WHERE id=%s", (id,))
+    conn.commit()
+    cur.close()
+    conn.close()
+    return redirect(url_for("admin_churches"))
 
 @app.route("/admin/events_announcements", methods=["GET", "POST"])
 def admin_events_announcements():
-    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    conn = get_db()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
     if request.method == "POST":
         form_type = request.form.get("form_type")
-        print("Received POST request for:", form_type)
 
         if form_type == "announcement":
-            message = request.form.get("message")
-            expire_at = request.form.get("expire_at")
+            cur.execute(
+                "INSERT INTO announcements (message, expire_at) VALUES (%s, %s)",
+                (request.form["message"], request.form["expire_at"])
+            )
 
-            print("Announcement Form:", message, expire_at)
+        if form_type == "event":
+            cur.execute("""
+                INSERT INTO events (title, date, end_date, time, venue)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (
+                request.form["title"],
+                request.form["start_date"],
+                request.form.get("end_date"),
+                request.form["time"],
+                request.form["venue"]
+            ))
 
-            if message and expire_at:
-                try:
-                    cursor.execute(
-                        "INSERT INTO announcements (message, expire_at) VALUES (%s, %s)",
-                        (message, expire_at)
-                    )
-                    mysql.connection.commit()
-                    flash("Announcement added successfully.", "success")
-                except Exception as e:
-                    mysql.connection.rollback()
-                    print("Error inserting announcement:", e)
-                    flash("Failed to add announcement.", "error")
-            else:
-                flash("Both message and expiration date are required.", "error")
+        conn.commit()
 
-        elif form_type == "event":
-            title = request.form.get("title")
-            date = request.form.get("start_date")
-            end_date = request.form.get("end_date") or None
-            time = request.form.get("time")
-            venue = request.form.get("venue")
+    cur.execute("SELECT * FROM events WHERE date >= CURRENT_DATE ORDER BY date ASC")
+    events = cur.fetchall()
 
-            print("Event Form:", title, date, end_date, time, venue)
+    cur.execute("SELECT * FROM announcements WHERE expire_at >= NOW() ORDER BY expire_at ASC")
+    announcements = cur.fetchall()
 
-            if title and date and time and venue:
-                try:
-                    cursor.execute(
-                        "INSERT INTO events (title, date, end_date, time, venue) VALUES (%s, %s, %s, %s, %s)",
-                        (title, date, end_date, time, venue)
-                    )
-                    mysql.connection.commit()
-                    flash("Event added successfully.", "success")
-                except Exception as e:
-                    mysql.connection.rollback()
-                    print("Error inserting event:", e)
-                    flash("Failed to add event.", "error")
-            else:
-                flash("All event fields are required.", "error")
-
-    # Fetch upcoming events
-    try:
-        cursor.execute("SELECT * FROM events WHERE date >= CURDATE() ORDER BY date ASC")
-        events = cursor.fetchall()
-    except Exception as e:
-        print("Error fetching events:", e)
-        events = []
-
-    # Fetch active announcements
-    try:
-        cursor.execute("SELECT * FROM announcements WHERE expire_at >= NOW() ORDER BY expire_at ASC")
-        announcements = cursor.fetchall()
-    except Exception as e:
-        print("Error fetching announcements:", e)
-        announcements = []
-
+    cur.close()
+    conn.close()
     return render_template("admin_events_announcements.html", events=events, announcements=announcements)
 
 
 @app.route("/admin/events", methods=["GET", "POST"])
 def admin_events():
-    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    conn = get_db()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
 
     if request.method == "POST":
         title = request.form["title"]
@@ -406,121 +424,160 @@ def admin_events():
         end_date = request.form.get("end_date") or None
         time = request.form["time"]
         venue = request.form["venue"]
+
         cursor.execute(
             "INSERT INTO events (title, date, end_date, time, venue) VALUES (%s, %s, %s, %s, %s)",
             (title, date, end_date, time, venue)
         )
-        mysql.connection.commit()
+        conn.commit()
 
     cursor.execute("SELECT * FROM events ORDER BY date ASC")
     events = cursor.fetchall()
 
+    cursor.close()
+    conn.close()
     return render_template("admin_events.html", events=events)
 
 @app.route("/admin/announcements", methods=["GET", "POST"])
 def admin_announcements():
-    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    conn = get_db()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
 
     if request.method == "POST":
         message = request.form["message"]
-        expire_at = request.form["expire_at"]  # format: YYYY-MM-DD HH:MM
-        cursor.execute("INSERT INTO announcements (message, expire_at) VALUES (%s, %s)",
-                       (message, expire_at))
-        mysql.connection.commit()
+        expire_at = request.form["expire_at"]
+
+        cursor.execute(
+            "INSERT INTO announcements (message, expire_at) VALUES (%s, %s)",
+            (message, expire_at)
+        )
+        conn.commit()
 
     cursor.execute("SELECT * FROM announcements ORDER BY expire_at ASC")
     announcements = cursor.fetchall()
 
+    cursor.close()
+    conn.close()
     return render_template("admin_announcements.html", announcements=announcements)
 
 # Upload Event
 @app.route("/admin/events/upload", methods=["POST"])
 def upload_event():
+    conn = get_db()
+    cursor = conn.cursor()
+
     title = request.form["event"]
     date = request.form["event_date"]
     end_date = request.form.get("end_date") or None
     time = request.form["event_time"]
     venue = request.form["venue"]
 
-    cursor = mysql.connection.cursor()
     cursor.execute("""
         INSERT INTO events (title, date, end_date, time, venue)
         VALUES (%s, %s, %s, %s, %s)
     """, (title, date, end_date, time, venue))
-    mysql.connection.commit()
+
+    conn.commit()
+    cursor.close()
+    conn.close()
     return redirect("/admin/events-announcements")
 
 # Upload Announcement
 @app.route("/admin/announcements/upload", methods=["POST"])
 def upload_announcement():
+    conn = get_db()
+    cursor = conn.cursor()
+
     announcement = request.form["announcement"]
     expiry_date = request.form["expiry_date"]
     expiry_time = request.form["expiry_time"]
-
     expiry_datetime = f"{expiry_date} {expiry_time}"
 
-    cursor = mysql.connection.cursor()
     cursor.execute("""
         INSERT INTO announcements (announcement, expiry_datetime)
         VALUES (%s, %s)
     """, (announcement, expiry_datetime))
-    mysql.connection.commit()
+
+    conn.commit()
+    cursor.close()
+    conn.close()
     return redirect("/admin/events-announcements")
 
 # Inline Edit Event
 @app.route("/admin/events/edit/<int:event_id>", methods=["POST"])
 def edit_event(event_id):
-    data = request.get_json()
-    new_title = data.get("title")
-    new_date = data.get("date")
-    new_end_date = data.get("end_date") or None
-    new_time = data.get("time")
-    new_venue = data.get("venue")
+    conn = get_db()
+    cursor = conn.cursor()
 
-    cursor = mysql.connection.cursor()
+    data = request.get_json()
     cursor.execute("""
-        UPDATE events 
-        SET title = %s, date = %s, end_date = %s, time = %s, venue = %s 
+        UPDATE events
+        SET title = %s, date = %s, end_date = %s, time = %s, venue = %s
         WHERE id = %s
-    """, (new_title, new_date, new_end_date, new_time, new_venue, event_id))
-    mysql.connection.commit()
+    """, (
+        data.get("title"),
+        data.get("date"),
+        data.get("end_date") or None,
+        data.get("time"),
+        data.get("venue"),
+        event_id
+    ))
+
+    conn.commit()
+    cursor.close()
+    conn.close()
     return jsonify(status="success")
 
 # Inline Edit Announcement
 @app.route("/admin/announcements/edit/<int:announcement_id>", methods=["POST"])
 def edit_announcement(announcement_id):
-    data = request.get_json()
-    new_message = data.get("message")
-    new_expire = data.get("expire_at")
+    conn = get_db()
+    cursor = conn.cursor()
 
-    cursor = mysql.connection.cursor()
+    data = request.get_json()
     cursor.execute("""
-        UPDATE announcements 
-        SET message = %s, expire_at = %s 
+        UPDATE announcements
+        SET message = %s, expire_at = %s
         WHERE id = %s
-    """, (new_message, new_expire, announcement_id))
-    mysql.connection.commit()
+    """, (data.get("message"), data.get("expire_at"), announcement_id))
+
+    conn.commit()
+    cursor.close()
+    conn.close()
     return jsonify(status="success")
 
 # Delete Event
 @app.route("/admin/events/delete/<int:event_id>", methods=["POST"])
 def delete_event(event_id):
-    cursor = mysql.connection.cursor()
+    conn = get_db()
+    cursor = conn.cursor()
+
     cursor.execute("DELETE FROM events WHERE id = %s", (event_id,))
-    mysql.connection.commit()
+    conn.commit()
+
+    cursor.close()
+    conn.close()
     return jsonify(status="deleted")
 
 # Delete Announcement
 @app.route("/admin/announcements/delete/<int:announcement_id>", methods=["POST"])
 def delete_announcement(announcement_id):
-    cursor = mysql.connection.cursor()
+    conn = get_db()
+    cursor = conn.cursor()
+
     cursor.execute("DELETE FROM announcements WHERE id = %s", (announcement_id,))
-    mysql.connection.commit()
+    conn.commit()
+
+    cursor.close()
+    conn.close()
     return jsonify(status="deleted")
 
 
 @app.route('/admin/upload_gallery', methods=['GET', 'POST'])
 def upload_gallery():
+    conn = get_db()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+
     if request.method == 'POST':
         file = request.files['image']
         description = request.form['description']
@@ -530,54 +587,46 @@ def upload_gallery():
 
         if file and category in allowed_categories:
             upload_result = cloudinary_upload(file)
-            filename = upload_result['secure_url']  # Save URL instead of local path
+            filename = upload_result['secure_url']
 
-            cursor = mysql.connection.cursor()
             cursor.execute(
                 "INSERT INTO gallery (filename, description, category) VALUES (%s, %s, %s)",
                 (filename, description, category)
             )
-            mysql.connection.commit()
-            cursor.close()
+            conn.commit()
             flash("Image uploaded successfully", "success")
             return redirect(url_for('upload_gallery'))
 
-    # Fetch all gallery images
-    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute("SELECT * FROM gallery ORDER BY uploaded_at DESC")
     images = cursor.fetchall()
-    cursor.close()
 
+    cursor.close()
+    conn.close()
     return render_template('admin_upload_gallery.html', images=images)
 
 @app.route('/admin/delete_image/<int:image_id>', methods=['POST'])
 def delete_image(image_id):
-    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    conn = get_db()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
 
-    # Use the correct column name 'filename' instead of 'image'
     cursor.execute("SELECT filename FROM gallery WHERE id = %s", (image_id,))
     result = cursor.fetchone()
 
     if result:
-        cloudinary_url = result['filename']  # Cloudinary image URL
-
+        cloudinary_url = result['filename']
         try:
-            # Extract the public_id from the Cloudinary URL
-            # Example: https://res.cloudinary.com/your-cloud-name/image/upload/v12345678/gallery/image.jpg
             parts = cloudinary_url.split('/')
             version_index = parts.index('upload') + 1
-            public_id_with_ext = '/'.join(parts[version_index + 1:])  # Get the path after 'upload/v1234/'
-            public_id = public_id_with_ext.rsplit('.', 1)[0]  # Remove the file extension
-
-            # Delete from Cloudinary
+            public_id = '/'.join(parts[version_index + 1:]).rsplit('.', 1)[0]
             cloudinary.uploader.destroy(public_id)
         except Exception as e:
-            print(f"Error deleting from Cloudinary: {e}")
+            print(e)
 
-        # Delete from database
         cursor.execute("DELETE FROM gallery WHERE id = %s", (image_id,))
-        mysql.connection.commit()
+        conn.commit()
 
+    cursor.close()
+    conn.close()
     return redirect(url_for('upload_gallery'))
 
 
@@ -585,9 +634,18 @@ def delete_image(image_id):
 # Home Page
 @app.route('/')
 def home():
-    cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    cur.execute("SELECT * FROM events WHERE date >= %s ORDER BY date ASC LIMIT 2", (datetime.today(),))
+    conn = get_db()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+    cur.execute(
+        "SELECT * FROM events WHERE date >= %s ORDER BY date ASC LIMIT 2",
+        (datetime.today(),)
+    )
     upcoming_events = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
     return render_template('home.html', events_preview=upcoming_events)
 
 @app.route('/sitemap.xml')
@@ -609,33 +667,36 @@ def ministries():
 
 @app.route("/leadership")
 def leadership():
-    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    conn = get_db()
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
-    # Fetch board members
     cursor.execute("""
         SELECT id, name, image, title, position, region, church
         FROM board_members
     """)
     members = cursor.fetchall()
 
-    # Fetch pastors (ordered by rank)
     cursor.execute("""
         SELECT * FROM pastors
-        ORDER BY FIELD(title, 'Bishop', 'Reverend', 'Apostle', 'Pastor')
+        ORDER BY
+          CASE title
+            WHEN 'Bishop' THEN 1
+            WHEN 'Reverend' THEN 2
+            WHEN 'Apostle' THEN 3
+            WHEN 'Pastor' THEN 4
+            ELSE 5
+          END
     """)
     pastors = cursor.fetchall()
 
-    # Build pastor image lookup
     pastor_lookup = {
         (f"{p['title'].strip()} {p['name'].strip()}", p['region'].strip().lower()): p['image']
         for p in pastors
     }
 
-    # Fetch churches with timestamps
-    cursor.execute("SELECT *, id AS church_id FROM churches ORDER BY id ASC")  # id used as creation order
+    cursor.execute("SELECT *, id AS church_id FROM churches ORDER BY id ASC")
     churches = cursor.fetchall()
 
-    # Group churches by region
     region_map = {}
     region_first_church_id = {}
 
@@ -649,47 +710,43 @@ def leadership():
         c['lead_image'] = pastor_lookup.get(lead_key)
 
         region_map.setdefault(region, []).append(c)
-        # Track earliest church ID for tie-breaking sort
         if region not in region_first_church_id:
             region_first_church_id[region] = church_id
 
-    # Sort regions:
-    # 1. Nairobi first
-    # 2. Then by number of churches (descending)
-    # 3. Then by first added church ID (ascending)
     sorted_regions = sorted(
         region_map.keys(),
         key=lambda r: (
-            r.lower() != "nairobi",                    # Nairobi first
-            -len(region_map[r]),                       # More churches higher
-            region_first_church_id[r]                  # Earlier added region breaks tie
+            r.lower() != "nairobi",
+            -len(region_map[r]),
+            region_first_church_id[r]
         )
     )
 
-    # Build sorted region map
     sorted_region_map = {r: region_map[r] for r in sorted_regions}
 
-    # Parse other pastors
     for region, church_list in sorted_region_map.items():
         for church in church_list:
             raw = church.get('other_pastors', '') or ''
             church['parsed_other_pastors'] = parse_other_pastors(raw)
 
-    return render_template("leadership.html",
-                           board_members=members,
-                           pastors=pastors,
-                           churches_by_region=sorted_region_map)
+    cursor.close()
+    conn.close()
 
-
+    return render_template(
+        "leadership.html",
+        board_members=members,
+        pastors=pastors,
+        churches_by_region=sorted_region_map
+    )
 
 
 
 # Sermons & Gallery
 @app.route('/sermons')
 def sermons():
-    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    conn = get_db()
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
-    # Fetch gallery images
     cursor.execute("SELECT * FROM gallery WHERE category = 'pastors' ORDER BY uploaded_at DESC")
     pastors_gallery = cursor.fetchall()
 
@@ -702,25 +759,25 @@ def sermons():
     cursor.execute("SELECT * FROM gallery WHERE category = 'churches' ORDER BY uploaded_at DESC")
     churches_gallery = cursor.fetchall()
 
-    # Check cache file
+    cursor.close()
+    conn.close()
+
     cache_file = 'sermons.json'
-    cache_expiry_seconds = 3 * 60 * 60  # 3 hours
+    cache_expiry_seconds = 3 * 60 * 60
 
     sermons = []
     if os.path.exists(cache_file):
-        modified_time = os.path.getmtime(cache_file)
-        if time.time() - modified_time < cache_expiry_seconds:
-            with open(cache_file, 'r') as f:
+        if time.time() - os.path.getmtime(cache_file) < cache_expiry_seconds:
+            with open(cache_file) as f:
                 sermons = json.load(f)
         else:
             fetch_latest_sermons()
-            with open(cache_file, 'r') as f:
-                sermons = json.load(f)
     else:
         fetch_latest_sermons()
-        if os.path.exists(cache_file):
-            with open(cache_file, 'r') as f:
-                sermons = json.load(f)
+
+    if os.path.exists(cache_file):
+        with open(cache_file) as f:
+            sermons = json.load(f)
 
     return render_template(
         'sermons.html',
@@ -735,15 +792,21 @@ def sermons():
 # Events & Announcements
 @app.route("/events")
 def events():
-    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    conn = get_db()
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
-    # Fetch upcoming events
-    cursor.execute("SELECT * FROM events WHERE date >= CURDATE() ORDER BY date ASC")
+    cursor.execute(
+        "SELECT * FROM events WHERE date >= CURRENT_DATE ORDER BY date ASC"
+    )
     events = cursor.fetchall()
 
-    # Fetch valid announcements
-    cursor.execute("SELECT * FROM announcements WHERE expire_at >= NOW() ORDER BY expire_at ASC")
+    cursor.execute(
+        "SELECT * FROM announcements WHERE expire_at >= NOW() ORDER BY expire_at ASC"
+    )
     announcements = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
 
     return render_template("events.html", events=events, announcements=announcements)
 
