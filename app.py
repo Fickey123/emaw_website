@@ -102,7 +102,7 @@ def logout_admin():
 
 @app.route("/admin/board_members")
 def admin_board_members():
-    conn = get_db_connection()
+    conn = get_db()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM board_members")
     members = cursor.fetchall()
