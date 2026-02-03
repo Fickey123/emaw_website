@@ -124,15 +124,17 @@ def add_board_member():
     result = cloudinary.uploader.upload(image)
     image_url = result['secure_url']
 
+    title = request.form['title'].strip().capitalize()
+
     cur.execute("""
         INSERT INTO board_members (name, title, position, region, church, image)
         VALUES (%s, %s, %s, %s, %s, %s)
     """, (
-        request.form['name'],
-        request.form['title'],
-        request.form['position'],
-        request.form['region'],
-        request.form['church'],
+        request.form['name'].strip(),
+        title,
+        request.form['position'].strip(),
+        request.form['region'].strip(),
+        request.form['church'].strip(),
         image_url
     ))
 
