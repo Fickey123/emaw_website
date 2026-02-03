@@ -108,7 +108,11 @@ def admin_board_members():
     members = cursor.fetchall()
     cursor.close()
     conn.close()
-    return render_template("admin_board.html", board_members=members, active_page='board_members')
+    return render_template(
+        "admin_board.html",
+        board_members=members,
+        active_page="board_members"
+    )
 
 
 @app.route("/admin/board_members/add", methods=["POST"])
