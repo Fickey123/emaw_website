@@ -29,9 +29,13 @@ app.secret_key = 'your_secret_key_here'  # Required for flashing messages (e.g.,
 
 def get_db():
     return psycopg2.connect(
-        os.environ.get("DATABASE_URL"),
+        host=os.environ["DB_HOST"],
+        dbname=os.environ["DB_NAME"],
+        user=os.environ["DB_USER"],
+        password=os.environ["DB_PASSWORD"],
+        port=5432,
         sslmode="require",
-        cursor_factory=psycopg2.extras.RealDictCursor
+        cursor_factory=RealDictCursor
     )
 
 
